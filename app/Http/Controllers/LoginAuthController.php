@@ -21,19 +21,38 @@ class LoginAuthController extends Controller
             'password' => 'required',
         ]);
 
-        $validatedAdmin = auth()->attempt([
-            'username' => $request->username,
-            'password' => $request->password,
-        ]);
+    // Attempt login for both 'web' and 'faculty' guards with role validation
+    $validatedAdmin = auth()->guard('web')->attempt([
+        'username' => $request->username,
+        'password' => $request->password,
+        'role' => 'Administrator',
+    ]);
+
+    $validatedStaff = auth()->guard('web')->attempt([
+        'username' => $request->username,
+        'password' => $request->password,
+        'role' => 'staff',
+    ]);
 
         if ($validatedAdmin) {
-            $route = (auth()->user()->role == "Administrator") || (auth()->user()->role == "staff") ? 'folders' : 'folders';
-            return redirect()->route($route)->with('success', 'Login Successfully');
-        }else {
+            return redirect()->route('dashboard')->with('success', 'You have successfully logged in.');
+        }
+        elseif($validatedStaff) {
+            return redirect()->route('home')->with('success', 'You have successfully logged in.');
+        }
+        else {
             return redirect()->back()->with('error', 'Invalid Credentials');
         }
     }
     
+
+
+
+    public function logout()
+    {
+        auth()->logout();
+        return redirect('/')->with('success', 'You have successfully logged out.');
+    }
 }
-
-
+// Note: Ensure that the 'web' guard is properly configured in your auth.php config file
+// and that the 'Administrator' and 'staff' roles are correctly set in your users table

@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LoginAuthController;
+use App\Http\Controllers\MenuController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -18,8 +19,16 @@ Route::group(['middleware'=>['guest']],function(){
         return view('login.login');
     });
 
-//login
-Route::get('/login', [LoginAuthController::class, 'getLogin'])->name('getLogin');
-Route::post('/login', [LoginAuthController::class, 'postLogin'])->name('postLogin');
+    //login
+    Route::get('/login', [LoginAuthController::class, 'getLogin'])->name('getLogin');
+    Route::post('/login', [LoginAuthController::class, 'postLogin'])->name('postLogin');
 
 });
+
+    Route::group(['middleware'=>['login_auth']],function(){
+       //logout
+    Route::get('/logout', [LoginAuthController::class,'logout'])->name('logout');
+
+    //dashboard
+    Route::get('/dashboard', [MenuController::class,'dashboard'])->name('dashboard'); 
+ });

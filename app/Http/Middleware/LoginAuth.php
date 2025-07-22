@@ -27,7 +27,7 @@ class LoginAuth
         // Example: restrict 'staffs' from accessing 'users' or 'office'
         if ($user->role==('staffs')) {
             if ($request->is('users') || $request->is('office') || $request->is('users/*') || $request->is('office/*')) {
-                return redirect()->route('folders')->with('error1', 'You do not have permission to access this page');
+                return redirect()->route('dashboard')->with('error1', 'You do not have permission to access this page');
             }
         }
 
