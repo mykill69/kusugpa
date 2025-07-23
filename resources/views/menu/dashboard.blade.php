@@ -101,84 +101,98 @@
     </div>
 
     <div class="row mt-4">
-    <!-- Monthly Crop Production (Single Bar) -->
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">Monthly Crop Production</h3>
+        <!-- Monthly Crop Production (Single Bar) -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Monthly Crop Production</h3>
+                </div>
+                <div class="card-body">
+                    <canvas id="monthlyChart" height="200"></canvas>
+                </div>
             </div>
-            <div class="card-body">
-                <canvas id="monthlyChart" height="200"></canvas>
+        </div>
+
+        <!-- Last 5 Years Crop Production (Comparative Bar) -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Last 5 Years Crop Production</h3>
+                </div>
+                <div class="card-body">
+                    <canvas id="yearlyChart" height="200"></canvas>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Last 5 Years Crop Production (Comparative Bar) -->
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">Last 5 Years Crop Production</h3>
-            </div>
-            <div class="card-body">
-                <canvas id="yearlyChart" height="200"></canvas>
-            </div>
-        </div>
-    </div>
-</div>
 
 
-    
     <!-- Additional Dashboard Content -->
-<div class="row">
-    <!-- Recent Activity -->
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">Recent Activity</h3>
+    <div class="row">
+        <!-- Recent Activity -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Recent Activity</h3>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-user text-primary"></i> User <strong>Juan Dela Cruz</strong> submitted a
+                            voucher.</li>
+                        <li><i class="fas fa-check text-success"></i> Voucher #102 approved.</li>
+                        <li><i class="fas fa-times text-danger"></i> Voucher #97 rejected.</li>
+                        <li><i class="fas fa-user-plus text-warning"></i> New member <strong>Maria Clara</strong>
+                            registered.</li>
+                    </ul>
+                </div>
             </div>
-            <div class="card-body">
-                <ul class="list-unstyled">
-                    <li><i class="fas fa-user text-primary"></i> User <strong>Juan Dela Cruz</strong> submitted a voucher.</li>
-                    <li><i class="fas fa-check text-success"></i> Voucher #102 approved.</li>
-                    <li><i class="fas fa-times text-danger"></i> Voucher #97 rejected.</li>
-                    <li><i class="fas fa-user-plus text-warning"></i> New member <strong>Maria Clara</strong> registered.</li>
-                </ul>
+        </div>
+
+        <!-- Task Progress -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Task Progress</h3>
+                </div>
+                <div class="card-body">
+                    <div class="progress-group">
+                        Voucher Processing
+                        <span class="float-right"><b>75</b>/100</span>
+                        <div class="progress progress-sm">
+                            <div class="progress-bar bg-info" style="width: 75%"></div>
+                        </div>
+                    </div>
+                    <div class="progress-group">
+                        Loans Released
+                        <span class="float-right"><b>30</b>/50</span>
+                        <div class="progress progress-sm">
+                            <div class="progress-bar bg-success" style="width: 60%"></div>
+                        </div>
+                    </div>
+                    <div class="progress-group">
+                        Reports Generated
+                        <span class="float-right"><b>10</b>/20</span>
+                        <div class="progress progress-sm">
+                            <div class="progress-bar bg-warning" style="width: 50%"></div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Task Progress -->
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">Task Progress</h3>
-            </div>
-            <div class="card-body">
-                <div class="progress-group">
-                    Voucher Processing
-                    <span class="float-right"><b>75</b>/100</span>
-                    <div class="progress progress-sm">
-                        <div class="progress-bar bg-info" style="width: 75%"></div>
-                    </div>
-                </div>
-                <div class="progress-group">
-                    Loans Released
-                    <span class="float-right"><b>30</b>/50</span>
-                    <div class="progress progress-sm">
-                        <div class="progress-bar bg-success" style="width: 60%"></div>
-                    </div>
-                </div>
-                <div class="progress-group">
-                    Reports Generated
-                    <span class="float-right"><b>10</b>/20</span>
-                    <div class="progress progress-sm">
-                        <div class="progress-bar bg-warning" style="width: 50%"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <div id="crop-year-options" class="d-none">
+        @foreach ($cropYears as $cy)
+            <option value="{{ $cy }}">{{ $cy }}</option>
+        @endforeach
     </div>
-</div>
+
+    <div id="week-no-options" class="d-none">
+        @foreach ($weekNos as $wn)
+            <option value="{{ $wn }}">{{ $wn }}</option>
+        @endforeach
+    </div>
 
     <!-- ChartJS -->
     <script src="template/plugins/chart.js/Chart.min.js"></script>
@@ -186,65 +200,72 @@
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<script>
-    // Monthly Chart - Single Bar
-    const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
-    new Chart(monthlyCtx, {
-        type: 'bar',
-        data: {
-            labels: ['January', 'February', 'March', 'April'],
-            datasets: [{
-                label: 'Crop Output (tons)',
-                data: [120, 90, 130, 100],
-                backgroundColor: 'rgba(75, 192, 192, 0.7)',
-                borderRadius: 5
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: { legend: { display: false } },
-            scales: {
-                y: {
-                    beginAtZero: true
+    <script>
+        // Monthly Chart - Single Bar
+        const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
+        new Chart(monthlyCtx, {
+            type: 'bar',
+            data: {
+                labels: ['January', 'February', 'March', 'April'],
+                datasets: [{
+                    label: 'Crop Output (tons)',
+                    data: [120, 90, 130, 100],
+                    backgroundColor: 'rgba(75, 192, 192, 0.7)',
+                    borderRadius: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
                 }
             }
-        }
-    });
+        });
 
-    // Yearly Chart - Comparative Bar (Multiple Datasets)
-    const yearlyCtx = document.getElementById('yearlyChart').getContext('2d');
-    new Chart(yearlyCtx, {
-        type: 'bar',
-        data: {
-            labels: ['2021', '2022', '2023', '2024', '2025'],
-            datasets: [
-                {
-                    label: 'Rice',
-                    data: [120, 140, 130, 110, 125],
-                    backgroundColor: 'rgba(255, 99, 132, 0.7)'
+        // Yearly Chart - Comparative Bar (Multiple Datasets)
+        const yearlyCtx = document.getElementById('yearlyChart').getContext('2d');
+        new Chart(yearlyCtx, {
+            type: 'bar',
+            data: {
+                labels: ['2021', '2022', '2023', '2024', '2025'],
+                datasets: [{
+                        label: 'Rice',
+                        data: [120, 140, 130, 110, 125],
+                        backgroundColor: 'rgba(255, 99, 132, 0.7)'
+                    },
+                    {
+                        label: 'Corn',
+                        data: [90, 100, 95, 105, 110],
+                        backgroundColor: 'rgba(255, 206, 86, 0.7)'
+                    },
+                    {
+                        label: 'Banana',
+                        data: [70, 80, 60, 85, 90],
+                        backgroundColor: 'rgba(54, 162, 235, 0.7)'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top'
+                    }
                 },
-                {
-                    label: 'Corn',
-                    data: [90, 100, 95, 105, 110],
-                    backgroundColor: 'rgba(255, 206, 86, 0.7)'
-                },
-                {
-                    label: 'Banana',
-                    data: [70, 80, 60, 85, 90],
-                    backgroundColor: 'rgba(54, 162, 235, 0.7)'
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            plugins: { legend: { position: 'top' } },
-            scales: {
-                y: {
-                    beginAtZero: true
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
                 }
             }
-        }
-    });
-</script>
+        });
+    </script>
 
 @endsection

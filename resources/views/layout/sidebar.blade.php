@@ -2,7 +2,8 @@
 <aside class="main-sidebar sidebar-dark-primary elevation-4">
     <!-- Brand Logo -->
     <a href="{{ route('dashboard') }}" class="brand-link">
-        <span class="brand-text font-weight-light">KUSUG-PA</span>
+        <span class="brand-text font-weight-light">KUSUG-PA</span><img src="{{ asset('template/img/kusug_logo.png') }}"
+            alt="KUSUG-PA Logo" class="brand-image img-circle elevation-3" style="opacity: .8">
     </a>
 
     <!-- Sidebar -->
@@ -40,25 +41,38 @@
                     <a href="#" class="nav-link">
                         <i class="nav-icon fas fa-calendar-week"></i>
                         <p>
-                            Weekly Update
+                            Updates
                             <i class="right fas fa-angle-left"></i>
                         </p>
                     </a>
                     <ul class="nav nav-treeview">
                         <li class="nav-item">
-                            <a href="#" class="nav-link">
+                            <a href="#" class="nav-link" id="quedan-alert">
                                 <i class="far fa-circle nav-icon"></i>
                                 <p>Quedan Price</p>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="#" class="nav-link">
+                            <a href="#" class="nav-link" id="molasses-alert">
                                 <i class="far fa-circle nav-icon"></i>
                                 <p>Molasses Price</p>
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" id="cropyear-alert">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Crop Year</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" id="weeknum-alert">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Week Number</p>
+                            </a>
+                        </li>
                     </ul>
                 </li>
+
 
                 <!-- Reports (Dropdown) -->
                 <li class="nav-item has-treeview">

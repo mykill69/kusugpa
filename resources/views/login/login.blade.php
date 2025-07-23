@@ -20,7 +20,8 @@
     <!-- Theme style -->
     <link rel="stylesheet" href="{{ asset('template/dist/css/adminlte.css') }}">
     <!-- Logo for demo purposes -->
-    <link rel="shortcut icon" type="" href="{{ asset('template/img/CPSU_L.png') }}">
+    {{-- <link rel="shortcut icon" type="" href="{{ asset('template/img/kusug_logo.png') }}"> --}}
+     <link rel="shortcut icon" type="" href="{{ asset('template/img/kusug_logo2.png') }}">
 
     <style type="text/css">
         .login-box{
@@ -84,7 +85,7 @@
                     <div class="col-md-12">
                         <div class="login-logo">
                             <a href="">
-                                <img src="{{ asset('template/img/.png') }}" class="img-circle" width="103px" height="100px">
+                                <img src="{{ asset('template/img/kusug_logo.png') }}" class="img-circle" width="103px" height="100px">
                             </a>
                             <h1 style="font-family: Roboto;">KUSUG-PA</h1>
                         </div>
