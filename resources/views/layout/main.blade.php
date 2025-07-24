@@ -73,6 +73,24 @@
             </section>
         </div>
 
+
+<!-- Hidden dropdown containers for SweetAlert -->
+<div id="dropdown-data" style="display: none;">
+    <div id="crop-year-options">
+        @foreach(App\Models\CropYear::pluck('crop_year') as $cy)
+            <option value="{{ $cy }}">{{ $cy }}</option>
+        @endforeach
+    </div>
+
+    <div id="week-no-options">
+        @foreach(App\Models\WeekNo::pluck('week_no') as $wn)
+            <option value="{{ $wn }}">{{ $wn }}</option>
+        @endforeach
+    </div>
+</div>
+
+
+
         <!-- Footer -->
         <footer class="main-footer text-sm text-center">
             <strong>KUSUG-PA Check and Voucher &copy; {{ date('Y') }}</strong>
@@ -117,9 +135,152 @@
     <script src="{{ asset('template/plugins/sweetalert2/sweetalert2.min.js') }}"></script>
 
 
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const cropYearDropdown = document.getElementById('crop-year-options')?.innerHTML || '';
+    const weekNoDropdown = document.getElementById('week-no-options')?.innerHTML || '';
+    const userId = "{{ auth()->check() ? auth()->user()->id : '' }}";
+
+    function postData(url, data) {
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(res => res.json())
+        .then(response => Swal.fire('Success', response.message, 'success'))
+        .catch(() => Swal.fire('Error', 'Something went wrong!', 'error'));
+    }
+
+    function swalFormGroup(label, input) {
+        return `
+            <div class="form-group row mb-2" style="text-align:left; display:flex; align-items:center;">
+                <label class="col-sm-4 col-form-label" style="font-weight:bold;">${label}</label>
+                <div class="col-sm-8">${input}</div>
+            </div>
+        `;
+    }
+
+    const bindIfExists = (id, handler) => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('click', handler);
+    };
+
+    // Crop Year
+    bindIfExists('cropyear-alert', function (e) {
+        e.preventDefault();
+        Swal.fire({
+            title: 'Add Crop Year',
+            html: `
+                <div class="container text-start">
+                    ${swalFormGroup('Crop Year', `<input type="text" id="new_crop_year" class="form-control" placeholder="e.g. 2024-2025">`)}
+                    <input type="hidden" id="user_id" value="${userId}">
+                </div>
+            `,
+            confirmButtonText: 'Submit',
+            preConfirm: () => ({
+                crop_year: document.getElementById('new_crop_year').value,
+                user_id: document.getElementById('user_id').value
+            })
+        }).then(result => {
+            if (result.isConfirmed) {
+                postData("{{ route('updates.addCropYear') }}", result.value);
+            }
+        });
+    });
+
+    // Week Number
+    bindIfExists('weeknum-alert', function (e) {
+        e.preventDefault();
+        Swal.fire({
+            title: 'Add Week Number',
+            html: `
+                <div class="container text-start">
+                    ${swalFormGroup('Crop Year', `<select id="crop_year" class="form-control">${cropYearDropdown}</select>`)}
+                    ${swalFormGroup('Week Number', `<input type="text" id="week_no" class="form-control" placeholder="e.g. 1">`)}
+                    ${swalFormGroup('Week Start', `<input type="date" id="week_start_date" class="form-control">`)}
+                    ${swalFormGroup('Week End', `<input type="date" id="week_end_date" class="form-control">`)}
+                    <input type="hidden" id="user_id" value="${userId}">
+                </div>
+            `,
+            confirmButtonText: 'Submit',
+            preConfirm: () => ({
+                crop_year: document.getElementById('crop_year').value,
+                week_no: document.getElementById('week_no').value,
+                week_start_date: document.getElementById('week_start_date').value,
+                week_end_date: document.getElementById('week_end_date').value,
+                user_id: document.getElementById('user_id').value
+            })
+        }).then(result => {
+            if (result.isConfirmed) {
+                postData("{{ route('updates.addWeekNumber') }}", result.value);
+            }
+        });
+    });
+
+    // Quedan
+    bindIfExists('quedan-alert', function (e) {
+        e.preventDefault();
+        Swal.fire({
+            title: 'Add Quedan Price',
+            html: `
+                <div class="container text-start">
+                    ${swalFormGroup('Quedan Type', `<input type="text" id="quedan_type" class="form-control" placeholder="e.g. A">`)}
+                    ${swalFormGroup('Quedan Price', `<input type="number" id="quedan_price" class="form-control" placeholder="e.g. 950">`)}
+                    ${swalFormGroup('Crop Year', `<select id="crop_year" class="form-control">${cropYearDropdown}</select>`)}
+                    ${swalFormGroup('Week Number', `<select id="week_no" class="form-control">${weekNoDropdown}</select>`)}
+                    <input type="hidden" id="user_id" value="${userId}">
+                </div>
+            `,
+            confirmButtonText: 'Submit',
+            preConfirm: () => ({
+                quedan_type: document.getElementById('quedan_type').value,
+                quedan_price: document.getElementById('quedan_price').value,
+                crop_year: document.getElementById('crop_year').value,
+                week_no: document.getElementById('week_no').value,
+                user_id: document.getElementById('user_id').value
+            })
+        }).then(result => {
+            if (result.isConfirmed) {
+                postData("{{ route('updates.addQuedanPrice') }}", result.value);
+            }
+        });
+    });
+
+    // Molasses
+    bindIfExists('molasses-alert', function (e) {
+        e.preventDefault();
+        Swal.fire({
+            title: 'Add Molasses Price',
+            html: `
+                <div class="container text-start">
+                    ${swalFormGroup('Molasses Price', `<input type="number" id="mol_price" class="form-control" placeholder="e.g. 850">`)}
+                    ${swalFormGroup('Crop Year', `<select id="crop_year" class="form-control">${cropYearDropdown}</select>`)}
+                    ${swalFormGroup('Week Number', `<select id="week_no" class="form-control">${weekNoDropdown}</select>`)}
+                    <input type="hidden" id="user_id" value="${userId}">
+                </div>
+            `,
+            confirmButtonText: 'Submit',
+            preConfirm: () => ({
+                mol_price: document.getElementById('mol_price').value,
+                crop_year: document.getElementById('crop_year').value,
+                week_no: document.getElementById('week_no').value,
+                user_id: document.getElementById('user_id').value
+            })
+        }).then(result => {
+            if (result.isConfirmed) {
+                postData("{{ route('updates.addMolassesPrice') }}", result.value);
+            }
+        });
+    });
+});
+</script>
 
 
-    <script>
+    {{-- <script>
         document.addEventListener('DOMContentLoaded', function() {
             const cropYearDropdown = document.getElementById('crop-year-options').innerHTML;
             const weekNoDropdown = document.getElementById('week-no-options').innerHTML;
@@ -272,9 +433,9 @@
                 });
             });
         });
-    </script>
 
 
+    </script> --}}
 
     <script>
         function openSummaryUpload() {
@@ -349,6 +510,8 @@
             });
         });
     </script>
+
+
 
 
 </body>

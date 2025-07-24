@@ -9,6 +9,8 @@
         margin-left: 5px;
     }
 </style>
+
+
 @section('content')
     <div class="container-fluid">
         <h4 class="mb-3">Summary Report</h4>
@@ -128,6 +130,10 @@
             </div>
         </div>
     </div>
+        <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+
+    <!-- SweetAlert2 -->
+    <script src="{{ asset('template/plugins/sweetalert2/sweetalert2.min.js') }}"></script>
 
     <script src="template/plugins/jquery/jquery.min.js"></script>
     <!-- Bootstrap 4 -->
