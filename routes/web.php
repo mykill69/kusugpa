@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LoginAuthController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\UpdatesController;
+use App\Http\Controllers\UploadController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -38,5 +39,9 @@ Route::group(['middleware'=>['guest']],function(){
     Route::post('/updates/add-week-number', [UpdatesController::class, 'addWeekNumber'])->name('updates.addWeekNumber');
     Route::post('/updates/add-quedan-price', [UpdatesController::class, 'addQuedanPrice'])->name('updates.addQuedanPrice');
     Route::post('/updates/add-molasses-price', [UpdatesController::class, 'addMolassesPrice'])->name('updates.addMolassesPrice');
+
+    //upload summary
+    Route::post('/upload-summary', [UploadController::class, 'uploadCSV'])->name('summary.upload');
+
 
  });

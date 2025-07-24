@@ -87,7 +87,7 @@
                         <li class="nav-item">
                             <a href="#" class="nav-link">
                                 <i class="far fa-circle nav-icon"></i>
-                                <p>TA Reports</p>
+                                <p>Summary Reports</p>
                             </a>
                         </li>
                         <li class="nav-item">
@@ -111,6 +111,62 @@
                     </ul>
                 </li>
 
+                <!-- Uploads -->
+                <li class="nav-item has-treeview">
+                    <a href="#" class="nav-link">
+                        <i class="nav-icon fas fa-upload"></i>
+                        <p>
+                            Weekly Uploads
+                            <i class="right fas fa-angle-left"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" onclick="openSummaryUpload()">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Summary</p>
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a href="#" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Trucking Allowance</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Fresh Cane Incentive</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Fuel</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Rentals</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Underload</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Transloading</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
                 <!-- User Management -->
                 <li class="nav-item">
                     <a href="#" class="nav-link">
@@ -124,14 +180,6 @@
                     <a href="#" class="nav-link">
                         <i class="nav-icon fas fa-cogs"></i>
                         <p>Settings</p>
-                    </a>
-                </li>
-
-                <!-- Logout -->
-                <li class="nav-item">
-                    <a href="{{ route('logout') }}" class="nav-link">
-                        <i class="nav-icon fas fa-sign-out-alt text-danger"></i>
-                        <p>Logout</p>
                     </a>
                 </li>
 
