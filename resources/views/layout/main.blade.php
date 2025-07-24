@@ -36,7 +36,7 @@
     <!-- summernote -->
     <link rel="stylesheet" href="{{ asset('template/plugins/summernote/summernote-bs4.min.css') }}">
     <!-- Logo  -->
-    <link rel="shortcut icon" type="" href="{{ asset('template/img/kusug_logo.png') }}">
+    <link rel="shortcut icon" type="" href="{{ asset('template/img/kusug_logo2.png') }}">
 
 </head>
 
@@ -83,6 +83,7 @@
 
     <!-- ./wrapper -->
     <script src="{{ asset('template/plugins/jquery/jquery.min.js') }}"></script>
+    
     <!-- Bootstrap 4 -->
 
     <!-- AdminLTE App -->

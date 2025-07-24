@@ -5,6 +5,7 @@ use App\Http\Controllers\LoginAuthController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\UpdatesController;
 use App\Http\Controllers\UploadController;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -42,6 +43,16 @@ Route::group(['middleware'=>['guest']],function(){
 
     //upload summary
     Route::post('/upload-summary', [UploadController::class, 'uploadCSV'])->name('summary.upload');
+
+    //summary report
+    Route::get('/summary-report', [MenuController::class, 'summaryReport'])->name('summaryReport');
+
+    Route::get('/summary/pdf-preview', [MenuController::class, 'previewPDF'])->name('summary.previewPDF');
+Route::get('/summary/download-pdf', [MenuController::class, 'downloadPDF'])->name('summary.downloadPDF');
+Route::get('/summary/download-pdf', [MenuController::class, 'downloadPDF'])->name('summary.downloadPDF');
+
+
+    
 
 
  });
