@@ -23,11 +23,13 @@
 
                 <!-- Check Vouchers -->
                 <li class="nav-item">
-                    <a href="#" class="nav-link">
+                    <a href="{{ route('printVoucher') }}"
+                        class="nav-link {{ request()->routeIs('printVoucher') ? 'active' : '' }}">
                         <i class="nav-icon fas fa-print"></i>
                         <p>Print Vouchers</p>
                     </a>
                 </li>
+
 
                 <!-- Loans -->
                 <li class="nav-item">

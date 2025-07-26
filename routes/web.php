@@ -51,6 +51,10 @@ Route::group(['middleware'=>['guest']],function(){
     Route::get('/summary/download-pdf', [MenuController::class, 'downloadPDF'])->name('summary.downloadPDF');
     Route::get('/summary/download-pdf', [MenuController::class, 'downloadPDF'])->name('summary.downloadPDF');
 
+    //print voucher
+    Route::get('/print-voucher', [MenuController::class, 'printVoucher'])->name('printVoucher');
+    Route::get('/voucher/pdf-preview', [MenuController::class, 'voucherPDF'])->name('voucher.pdf');
+
 
     
 

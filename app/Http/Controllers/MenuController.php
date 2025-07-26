@@ -71,4 +71,23 @@ public function downloadPDF(Request $request)
 }
 
 
+public function printVoucher(Request $request)
+{
+    $cropYear = CropYear::pluck('crop_year');
+    $weekNos = WeekNo::pluck('week_no')->sort();
+
+    $selectedCropYear = $request->input('crop_year');
+    $weekFrom = $request->input('week_from');
+    $weekTo = $request->input('week_to');
+
+    return view('menu.printVoucher', compact('cropYear', 'weekNos', 'selectedCropYear', 'weekFrom', 'weekTo'));
+}
+
+public function voucherPDF(Request $request)
+{
+    $pdf = Pdf::loadView('pdf.voucher'); // this will load a simple blade
+    return $pdf->stream('voucher-preview.pdf');
+}
+
+
 }
