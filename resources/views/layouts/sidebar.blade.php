@@ -111,6 +111,18 @@
                                 <p>Loan Reports</p>
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Weekly Prices</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Week No & Crop Year</p>
+                            </a>
+                        </li>
                     </ul>
                 </li>
 
@@ -174,18 +186,25 @@
                 <!-- User Management -->
                 <li class="nav-item">
                     <a href="#" class="nav-link">
+                        <i class="nav-icon fas fa-seedling"></i>
+                        <p>Planter Profiles</p>
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
                         <i class="nav-icon fas fa-users-cog"></i>
                         <p>User Management</p>
                     </a>
                 </li>
 
                 <!-- Settings -->
-                <li class="nav-item">
+                {{-- <li class="nav-item">
                     <a href="#" class="nav-link">
                         <i class="nav-icon fas fa-cogs"></i>
                         <p>Settings</p>
                     </a>
-                </li>
+                </li> --}}
 
             </ul>
         </nav>
