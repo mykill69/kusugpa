@@ -115,11 +115,11 @@
                                 </th>
                                 <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase cursor-pointer hover:bg-gray-100"
                                     @click="sortWeeks('week_start_date')">
-                                    Start <i class="fas fa-sort text-gray-300 ml-1"></i>
+                                    Start Date & Time <i class="fas fa-sort text-gray-300 ml-1"></i>
                                 </th>
                                 <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase cursor-pointer hover:bg-gray-100"
                                     @click="sortWeeks('week_end_date')">
-                                    End <i class="fas fa-sort text-gray-300 ml-1"></i>
+                                    End Date & Time <i class="fas fa-sort text-gray-300 ml-1"></i>
                                 </th>
                                 <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase">Actions</th>
                             </tr>
@@ -136,9 +136,21 @@
                                         <span class="text-sm font-semibold text-gray-900"
                                             x-text="'Week ' + week.week_no"></span>
                                     </td>
-                                    <td class="px-4 py-3 text-sm text-gray-600" x-text="formatDate(week.week_start_date)">
+                                    <td class="px-4 py-3">
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-sm text-gray-700"
+                                                x-text="formatDate(week.week_start_date)"></span>
+                                            <span class="text-xs font-mono bg-gray-100 text-gray-600 px-2 py-0.5 rounded"
+                                                x-text="formatTime(week.week_start_date)"></span>
+                                        </div>
                                     </td>
-                                    <td class="px-4 py-3 text-sm text-gray-600" x-text="formatDate(week.week_end_date)">
+                                    <td class="px-4 py-3">
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-sm text-gray-700"
+                                                x-text="formatDate(week.week_end_date)"></span>
+                                            <span class="text-xs font-mono bg-gray-100 text-gray-600 px-2 py-0.5 rounded"
+                                                x-text="formatTime(week.week_end_date)"></span>
+                                        </div>
                                     </td>
                                     <td class="px-4 py-3 text-center">
                                         <div class="flex items-center justify-center gap-2">
@@ -475,7 +487,26 @@
                             text: error.message
                         });
                     }
-                }
+                },
+                // Add this to your adminSettingsData() or the relevant component
+                formatDate(dateString) {
+                    if (!dateString) return '';
+                    const date = new Date(dateString);
+                    return date.toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: '2-digit',
+                        year: 'numeric'
+                    });
+                },
+
+                formatTime(dateString) {
+                    if (!dateString) return '--:--:--';
+                    const date = new Date(dateString);
+                    const hours = String(date.getHours()).padStart(2, '0');
+                    const minutes = String(date.getMinutes()).padStart(2, '0');
+                    const seconds = String(date.getSeconds()).padStart(2, '0');
+                    return hours + ':' + minutes + ':' + seconds;
+                },
             };
         }
     </script>
