@@ -768,6 +768,7 @@
                         </select>
                     </div>
                 </div>
+                
                 <div class="input-group">
                     <label class="form-label"><i class="fas fa-hashtag"></i> Week Number</label>
                     <div class="input-icon-wrapper">
@@ -775,37 +776,59 @@
                         <input type="number" id="week_no" class="swal2-input" placeholder="Enter week number (e.g., 1)" min="1" max="52">
                     </div>
                 </div>
+                
                 <div class="input-group">
-                    <label class="form-label"><i class="fas fa-play-circle"></i> Week Start Date & Time</label>
-                    <div class="input-icon-wrapper">
-                        <i class="fas fa-play-circle"></i>
-                        <input type="datetime-local" id="week_start_date" class="swal2-input">
+                    <label class="form-label"><i class="fas fa-play-circle"></i> Week Start</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div class="input-icon-wrapper">
+                            <i class="fas fa-calendar"></i>
+                            <input type="date" id="week_start_date" class="swal2-input" style="padding-left: 2.75rem;">
+                        </div>
+                        <div class="input-icon-wrapper">
+                            <i class="fas fa-clock"></i>
+                            <input type="time" id="week_start_time" class="swal2-input" value="00:00" style="padding-left: 2.75rem;">
+                        </div>
                     </div>
+                    <p class="text-xs text-gray-400 mt-1">24-hour format (HH:MM)</p>
                 </div>
+                
                 <div class="input-group">
-                    <label class="form-label"><i class="fas fa-stop-circle"></i> Week End Date & Time</label>
-                    <div class="input-icon-wrapper">
-                        <i class="fas fa-stop-circle"></i>
-                        <input type="datetime-local" id="week_end_date" class="swal2-input">
+                    <label class="form-label"><i class="fas fa-stop-circle"></i> Week End</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div class="input-icon-wrapper">
+                            <i class="fas fa-calendar"></i>
+                            <input type="date" id="week_end_date" class="swal2-input" style="padding-left: 2.75rem;">
+                        </div>
+                        <div class="input-icon-wrapper">
+                            <i class="fas fa-clock"></i>
+                            <input type="time" id="week_end_time" class="swal2-input" value="23:59" style="padding-left: 2.75rem;">
+                        </div>
                     </div>
+                    <p class="text-xs text-gray-400 mt-1">24-hour format (HH:MM)</p>
                 </div>
-             </div>
-                `,
+            </div>
+        `,
                 showCancelButton: true,
                 confirmButtonText: '<i class="fas fa-save mr-2"></i> Save Week',
                 cancelButtonText: '<i class="fas fa-times mr-2"></i> Cancel',
                 preConfirm: () => {
                     const cropYear = document.getElementById('crop_year').value;
                     const weekNo = document.getElementById('week_no').value;
-                    const weekStart = document.getElementById('week_start_date').value;
-                    const weekEnd = document.getElementById('week_end_date').value;
+                    const startDate = document.getElementById('week_start_date').value;
+                    const startTime = document.getElementById('week_start_time').value || '00:00';
+                    const endDate = document.getElementById('week_end_date').value;
+                    const endTime = document.getElementById('week_end_time').value || '23:59';
 
-                    if (!cropYear || !weekNo || !weekStart || !weekEnd) {
+                    if (!cropYear || !weekNo || !startDate || !endDate) {
                         Swal.showValidationMessage('Please fill all fields');
                         return false;
                     }
+
+                    const weekStart = startDate + ' ' + startTime + ':00';
+                    const weekEnd = endDate + ' ' + endTime + ':00';
+
                     if (new Date(weekEnd) <= new Date(weekStart)) {
-                        Swal.showValidationMessage('End date must be after start date');
+                        Swal.showValidationMessage('End date/time must be after start date/time');
                         return false;
                     }
 
