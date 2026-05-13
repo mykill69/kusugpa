@@ -5,22 +5,20 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class WeekNo extends Model
+class Mudpress extends Model
 {
     use HasFactory;
 
-    protected $table = 'week_no';
+    protected $table = 'mudpress';
 
     protected $fillable = [
         'crop_year',
         'week_no',
-        'week_start_date',
-        'week_end_date',
+        'planter_code',
+        'planter_name',
+        'trans_code',
+        'charge_code',
+        'mpress',
         'user_id',
-    ];
-
-    protected $casts = [
-        'week_start_date' => 'datetime',
-        'week_end_date' => 'datetime',
     ];
 }

@@ -26,8 +26,8 @@ class UpdatesController extends Controller
         $data = $request->validate([
             'crop_year' => 'required|string',
             'week_no' => 'required|string',
-            'week_start_date' => 'required|date',
-            'week_end_date' => 'required|date',
+            'week_start_date' => 'required|date_format:Y-m-d\TH:i',
+            'week_end_date' => 'required|date_format:Y-m-d\TH:i|after:week_start_date',
             'user_id' => 'required|exists:users,id',
         ]);
 

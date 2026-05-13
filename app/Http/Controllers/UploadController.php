@@ -242,6 +242,32 @@ class UploadController extends Controller
             ]
         ];
     }
+
+    private function processMudpressLine($line, $index, $userId)
+    {
+        if (count($line) < 7) {
+            return [
+                'success' => false,
+                'error' => "Line {$index}: Insufficient columns. Expected 7 columns."
+            ];
+        }
+
+        return [
+            'success' => true,
+            'data' => [
+                'crop_year' => trim($line[0]),
+                'week_no' => trim($line[1]),
+                'planter_code' => trim($line[2]),
+                'planter_name' => trim($line[3]),
+                'trans_code' => trim($line[4]),
+                'charge_code' => trim($line[5]),
+                'mpress' => (float) str_replace(',', '', $line[6]),
+                'user_id' => $userId,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]
+        ];
+    }
     
     private function getModel($type)
     {
@@ -252,6 +278,8 @@ class UploadController extends Controller
             'rentals' => \App\Models\RentalAllowance::class,
             'underload' => \App\Models\UnderloadAllowance::class,
             'transloading' => \App\Models\TransloadingAllowance::class,
+            'fci' => \App\Models\FreshCaneIncentive::class,
+            'mudpress' => \App\Models\Mudpress::class, // Add this
         ];
         
         if (!isset($models[$type])) {

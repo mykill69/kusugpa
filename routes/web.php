@@ -93,8 +93,8 @@ Route::middleware(['login_auth'])->group(function () {
 
     // Upload Routes
     Route::post('/upload/{type}', [UploadController::class, 'uploadCSV'])
-        ->where('type', 'summary|trucking|fuel|rentals|underload|transloading|fci')
-        ->name('upload.csv');
+    ->where('type', 'summary|trucking|fuel|rentals|underload|transloading|fci|mudpress')
+    ->name('upload.csv');
 
     // Dashboard API endpoints
     Route::get('/dashboard/data', [MenuController::class, 'dashboardData'])->name('dashboard.data');

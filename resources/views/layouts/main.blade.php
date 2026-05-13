@@ -321,12 +321,9 @@
     <div class="min-h-full">
         <!-- Mobile Overlay -->
         <div x-show="sidebarOpen" @click="sidebarOpen = false"
-            x-transition:enter="transition-opacity ease-linear duration-300" 
-            x-transition:enter-start="opacity-0"
-            x-transition:enter-end="opacity-100" 
-            x-transition:leave="transition-opacity ease-linear duration-300"
-            x-transition:leave-start="opacity-100" 
-            x-transition:leave-end="opacity-0"
+            x-transition:enter="transition-opacity ease-linear duration-300" x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100" x-transition:leave="transition-opacity ease-linear duration-300"
+            x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
             class="fixed inset-0 z-30 bg-gray-600 bg-opacity-75 lg:hidden">
         </div>
 
@@ -336,14 +333,10 @@
         </div>
 
         <!-- Mobile Sidebar (toggles with sidebarOpen) -->
-        <div x-show="sidebarOpen" 
-            x-transition:enter="transition ease-in-out duration-300 transform"
-            x-transition:enter-start="-translate-x-full" 
-            x-transition:enter-end="translate-x-0"
-            x-transition:leave="transition ease-in-out duration-300 transform" 
-            x-transition:leave-start="translate-x-0"
-            x-transition:leave-end="-translate-x-full" 
-            class="fixed inset-y-0 left-0 z-40 w-64 lg:hidden">
+        <div x-show="sidebarOpen" x-transition:enter="transition ease-in-out duration-300 transform"
+            x-transition:enter-start="-translate-x-full" x-transition:enter-end="translate-x-0"
+            x-transition:leave="transition ease-in-out duration-300 transform" x-transition:leave-start="translate-x-0"
+            x-transition:leave-end="-translate-x-full" class="fixed inset-y-0 left-0 z-40 w-64 lg:hidden">
             @include('layouts.sidebar-mobile')
         </div>
 
@@ -783,15 +776,21 @@
                     </div>
                 </div>
                 <div class="input-group">
-                    <label class="form-label"><i class="fas fa-play-circle"></i> Week Start Date</label>
-                    <div class="input-icon-wrapper"><i class="fas fa-play-circle"></i><input type="date" id="week_start_date" class="swal2-input"></div>
+                    <label class="form-label"><i class="fas fa-play-circle"></i> Week Start Date & Time</label>
+                    <div class="input-icon-wrapper">
+                        <i class="fas fa-play-circle"></i>
+                        <input type="datetime-local" id="week_start_date" class="swal2-input">
+                    </div>
                 </div>
                 <div class="input-group">
-                    <label class="form-label"><i class="fas fa-stop-circle"></i> Week End Date</label>
-                    <div class="input-icon-wrapper"><i class="fas fa-stop-circle"></i><input type="date" id="week_end_date" class="swal2-input"></div>
+                    <label class="form-label"><i class="fas fa-stop-circle"></i> Week End Date & Time</label>
+                    <div class="input-icon-wrapper">
+                        <i class="fas fa-stop-circle"></i>
+                        <input type="datetime-local" id="week_end_date" class="swal2-input">
+                    </div>
                 </div>
-            </div>
-        `,
+             </div>
+                `,
                 showCancelButton: true,
                 confirmButtonText: '<i class="fas fa-save mr-2"></i> Save Week',
                 cancelButtonText: '<i class="fas fa-times mr-2"></i> Cancel',
@@ -805,7 +804,7 @@
                         Swal.showValidationMessage('Please fill all fields');
                         return false;
                     }
-                    if (new Date(weekEnd) < new Date(weekStart)) {
+                    if (new Date(weekEnd) <= new Date(weekStart)) {
                         Swal.showValidationMessage('End date must be after start date');
                         return false;
                     }

@@ -34,6 +34,7 @@
                 'upload-underload',
                 'upload-transloading',
                 'upload-fci',
+                'upload-mudpress',
             ]);
 @endphp
 
@@ -87,6 +88,12 @@
                 <button onclick="openUploadModal('transloading')"
                     class="group flex w-full items-center rounded-md p-2 text-sm text-gray-600 hover:text-primary-600 hover:bg-gray-50">
                     <span>Transloading</span>
+                </button>
+            </li>
+            <li>
+                <button onclick="openUploadModal('mudpress')"
+                    class="group flex w-full items-center rounded-md p-2 text-sm text-gray-600 hover:text-primary-600 hover:bg-gray-50">
+                    <span>Mudpress</span>
                 </button>
             </li>
         </ul>

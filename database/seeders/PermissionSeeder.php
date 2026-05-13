@@ -45,6 +45,11 @@ class PermissionSeeder extends Seeder
                 'description' => 'Can upload trucking allowance CSV files',
             ],
             [
+                'name' => 'Upload Mudpress',
+                'slug' => 'upload-mudpress',
+                'description' => 'Can upload mudpress CSV files',
+            ],
+                        [
                 'name' => 'Upload Fresh Cane Incentive',
                 'slug' => 'upload-fci',
                 'description' => 'Can upload fresh cane incentive CSV files',
