@@ -146,6 +146,17 @@
     </li>
 @endif
 
+<!-- Crop & Week Management -->
+@if (in_array(auth()->user()->role, ['Administrator', 'super_admin', 'manager']))
+    <li>
+        <a href="{{ route('crop-weeks.index') }}"
+            class="group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold {{ request()->routeIs('crop-weeks.*') ? 'bg-primary-50 text-primary-700' : 'text-gray-700 hover:text-primary-600 hover:bg-gray-50' }}">
+            <i class="fas fa-calendar-week h-6 w-6 shrink-0"></i>
+            Crop & Week Management
+        </a>
+    </li>
+@endif
+
 <!-- Reports -->
 @php
     $canViewReports = auth()->user()->role === 'Administrator' || auth()->user()->hasPermission('view-reports');

@@ -22,25 +22,29 @@ class UpdatesController extends Controller
     }
 
     public function addWeekNumber(Request $request)
-    {
-        $data = $request->validate([
-            'crop_year' => 'required|string',
-            'week_no' => 'required|string',
-            'week_start_date' => 'required|date_format:Y-m-d\TH:i',
-            'week_end_date' => 'required|date_format:Y-m-d\TH:i|after:week_start_date',
-            'user_id' => 'required|exists:users,id',
-        ]);
+{
+    $data = $request->validate([
+        'crop_year' => 'required|string',
+        'week_no' => 'required|string',
+        'week_start_date' => 'required|date_format:Y-m-d H:i:s',
+        'week_end_date' => 'required|date_format:Y-m-d H:i:s|after:week_start_date',
+        'user_id' => 'required|exists:users,id',
+    ]);
 
-        WeekNo::create([
-            'crop_year' => $data['crop_year'],
-            'week_no' => $data['week_no'],
-            'week_start_date' => $data['week_start_date'],
-            'week_end_date' => $data['week_end_date'],
-            'user_id' => $data['user_id'],
-        ]);
+    // Convert datetime string to proper format
+    $startDateTime = \Carbon\Carbon::parse($data['week_start_date']);
+    $endDateTime = \Carbon\Carbon::parse($data['week_end_date']);
 
-        return response()->json(['message' => 'Week Number added successfully']);
-    }
+    WeekNo::create([
+        'crop_year' => $data['crop_year'],
+        'week_no' => $data['week_no'],
+        'week_start_date' => $startDateTime,
+        'week_end_date' => $endDateTime,
+        'user_id' => $data['user_id'],
+    ]);
+
+    return response()->json(['message' => 'Week Number added successfully']);
+}
 
     public function addQuedanPrice(Request $request)
     {

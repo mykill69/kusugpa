@@ -23,4 +23,9 @@ class WeekNo extends Model
         'week_start_date' => 'datetime',
         'week_end_date' => 'datetime',
     ];
+
+    public function cropYearRelation()
+    {
+        return $this->belongsTo(CropYear::class, 'crop_year', 'crop_year');
+    }
 }

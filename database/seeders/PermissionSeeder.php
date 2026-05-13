@@ -35,6 +35,11 @@ class PermissionSeeder extends Seeder
                 'description' => 'Can create and manage week numbers',
             ],
             [
+                'name' => 'Manage Crop & Weeks',
+                'slug' => 'manage-crop-weeks',
+                'description' => 'Can manage crop years and week numbers',
+            ],
+            [
                 'name' => 'Upload Summary',
                 'slug' => 'upload-summary',
                 'description' => 'Can upload summary CSV files',

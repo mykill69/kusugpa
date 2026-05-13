@@ -9,6 +9,7 @@ use App\Http\Controllers\UserManagementController;
 use App\Http\Controllers\LoanController;
 use App\Http\Controllers\LoanReportController;
 use App\Http\Controllers\LoanAttachmentController; 
+use App\Http\Controllers\CropWeekController;  
 
 /*
 |--------------------------------------------------------------------------
@@ -102,8 +103,11 @@ Route::middleware(['login_auth'])->group(function () {
 
     // Reports
     Route::get('/summary-report', [MenuController::class, 'summaryReport'])->name('summaryReport');
+    Route::get('/summary-report/data', [MenuController::class, 'summaryReportData'])->name('summaryReport.data');
+    Route::get('/summary-report/weeks', [MenuController::class, 'getWeeksByCropYear'])->name('summaryReport.weeks');
     Route::get('/summary/pdf-preview', [MenuController::class, 'previewPDF'])->name('summary.previewPDF');
     Route::get('/summary/download-pdf', [MenuController::class, 'downloadPDF'])->name('summary.downloadPDF');
+    
 
     // Print Voucher
     Route::get('/print-voucher', [MenuController::class, 'printVoucher'])->name('printVoucher');
@@ -132,4 +136,13 @@ Route::middleware(['login_auth'])->group(function () {
         Route::post('/cache/clear', [MenuController::class, 'clearCache'])->name('cache.clear');
         Route::post('/backup/create', [MenuController::class, 'createBackup'])->name('backup.create');
     });
+
+    // routes/web.php - Update the crop-weeks route
+Route::middleware(['login_auth:manage-crop-weeks'])->group(function () {
+    Route::get('/crop-weeks', [CropWeekController::class, 'index'])->name('crop-weeks.index');
+    Route::put('/crop-year/{cropYear}', [CropWeekController::class, 'updateCropYear'])->name('crop-year.update');
+    Route::delete('/crop-year/{cropYear}', [CropWeekController::class, 'destroyCropYear'])->name('crop-year.destroy');
+    Route::put('/week/{weekNo}', [CropWeekController::class, 'updateWeek'])->name('week.update');
+    Route::delete('/week/{weekNo}', [CropWeekController::class, 'destroyWeek'])->name('week.destroy');
+});
 });
