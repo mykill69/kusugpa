@@ -19,13 +19,16 @@ class WeekNo extends Model
         'user_id',
     ];
 
-    protected $casts = [
-        'week_start_date' => 'datetime',
-        'week_end_date' => 'datetime',
-    ];
-
-    public function cropYearRelation()
+  
+    
+    // Add accessors to format the date for the view
+    public function getWeekStartDateAttribute($value)
     {
-        return $this->belongsTo(CropYear::class, 'crop_year', 'crop_year');
+        return $value;
+    }
+    
+    public function getWeekEndDateAttribute($value)
+    {
+        return $value;
     }
 }

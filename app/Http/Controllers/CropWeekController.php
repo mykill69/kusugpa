@@ -15,14 +15,14 @@ class CropWeekController extends Controller
     public function index()
 {
     $cropYears = CropYear::orderBy('crop_year', 'desc')->get();
-    $weeks = WeekNo::with('cropYearRelation')->orderBy('crop_year', 'desc')->orderBy('week_no', 'asc')->get();
+    $weeks = WeekNo::orderBy('crop_year', 'desc')->orderBy('week_no', 'asc')->get(); // Removed ->with('cropYearRelation')
     
     // Prepare data for JavaScript
     $cropYearsData = $cropYears->map(function($c) {
         return [
             'id' => $c->id,
             'crop_year' => $c->crop_year,
-            'weeks_count' => $c->weeks->count()
+            'weeks_count' => WeekNo::where('crop_year', $c->crop_year)->count() // Fix: count weeks directly
         ];
     });
     
@@ -31,8 +31,8 @@ class CropWeekController extends Controller
             'id' => $w->id,
             'crop_year' => $w->crop_year,
             'week_no' => $w->week_no,
-            'week_start_date' => $w->week_start_date ? $w->week_start_date->format('Y-m-d H:i') : null,
-            'week_end_date' => $w->week_end_date ? $w->week_end_date->format('Y-m-d H:i') : null,
+            'week_start_date' => $w->week_start_date, // Keep original string format
+            'week_end_date' => $w->week_end_date, // Keep original string format
         ];
     });
     

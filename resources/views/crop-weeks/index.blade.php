@@ -6,7 +6,8 @@
 @section('content')
     <div x-data="cropWeekData()" class="space-y-6">
         <!-- Page Header -->
-        <div class="bg-gradient-to-r from-primary-700 via-primary-600 to-primary-500 rounded-2xl shadow-lg p-6 sm:p-8 text-white">
+        <div
+            class="bg-gradient-to-r from-primary-700 via-primary-600 to-primary-500 rounded-2xl shadow-lg p-6 sm:p-8 text-white">
             <div class="flex items-center gap-3 mb-2">
                 <i class="fas fa-calendar-week text-2xl"></i>
                 <h1 class="text-2xl sm:text-3xl font-bold">Crop Year & Week Management</h1>
@@ -32,10 +33,12 @@
                     <table class="min-w-full divide-y divide-gray-100">
                         <thead class="bg-gray-50 sticky top-0">
                             <tr>
-                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase cursor-pointer hover:bg-gray-100" @click="sortCropYears('crop_year')">
+                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase cursor-pointer hover:bg-gray-100"
+                                    @click="sortCropYears('crop_year')">
                                     Crop Year <i class="fas fa-sort text-gray-300 ml-1"></i>
                                 </th>
-                                <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase cursor-pointer hover:bg-gray-100" @click="sortCropYears('weeks_count')">
+                                <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase cursor-pointer hover:bg-gray-100"
+                                    @click="sortCropYears('weeks_count')">
                                     Weeks <i class="fas fa-sort text-gray-300 ml-1"></i>
                                 </th>
                                 <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase">Actions</th>
@@ -45,17 +48,20 @@
                             <template x-for="cropYear in sortedCropYears" :key="cropYear.id">
                                 <tr class="hover:bg-gray-50/50 transition-colors">
                                     <td class="px-4 py-3">
-                                        <span class="text-sm font-semibold text-gray-900" x-text="cropYear.crop_year"></span>
+                                        <span class="text-sm font-semibold text-gray-900"
+                                            x-text="cropYear.crop_year"></span>
                                     </td>
                                     <td class="px-4 py-3 text-center">
                                         <span class="text-sm text-gray-600" x-text="cropYear.weeks_count + ' weeks'"></span>
                                     </td>
                                     <td class="px-4 py-3 text-center">
                                         <div class="flex items-center justify-center gap-2">
-                                            <button @click="editCropYear(cropYear.id, cropYear.crop_year)" class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition">
+                                            <button @click="editCropYear(cropYear.id, cropYear.crop_year)"
+                                                class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition">
                                                 <i class="fas fa-edit text-sm"></i>
                                             </button>
-                                            <button @click="deleteCropYear(cropYear.id, cropYear.crop_year)" class="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition">
+                                            <button @click="deleteCropYear(cropYear.id, cropYear.crop_year)"
+                                                class="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition">
                                                 <i class="fas fa-trash text-sm"></i>
                                             </button>
                                         </div>
@@ -99,16 +105,20 @@
                     <table class="min-w-full divide-y divide-gray-100">
                         <thead class="bg-gray-50 sticky top-0">
                             <tr>
-                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase cursor-pointer hover:bg-gray-100" @click="sortWeeks('crop_year')">
+                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase cursor-pointer hover:bg-gray-100"
+                                    @click="sortWeeks('crop_year')">
                                     Crop Year <i class="fas fa-sort text-gray-300 ml-1"></i>
                                 </th>
-                                <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase cursor-pointer hover:bg-gray-100" @click="sortWeeks('week_no')">
+                                <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase cursor-pointer hover:bg-gray-100"
+                                    @click="sortWeeks('week_no')">
                                     Week <i class="fas fa-sort text-gray-300 ml-1"></i>
                                 </th>
-                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase cursor-pointer hover:bg-gray-100" @click="sortWeeks('week_start_date')">
+                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase cursor-pointer hover:bg-gray-100"
+                                    @click="sortWeeks('week_start_date')">
                                     Start <i class="fas fa-sort text-gray-300 ml-1"></i>
                                 </th>
-                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase cursor-pointer hover:bg-gray-100" @click="sortWeeks('week_end_date')">
+                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase cursor-pointer hover:bg-gray-100"
+                                    @click="sortWeeks('week_end_date')">
                                     End <i class="fas fa-sort text-gray-300 ml-1"></i>
                                 </th>
                                 <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase">Actions</th>
@@ -118,29 +128,38 @@
                             <template x-for="week in sortedWeeks" :key="week.id">
                                 <tr class="hover:bg-gray-50/50 transition-colors">
                                     <td class="px-4 py-3">
-                                        <span class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium" x-text="week.crop_year"></span>
+                                        <span
+                                            class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium"
+                                            x-text="week.crop_year"></span>
                                     </td>
                                     <td class="px-4 py-3 text-center">
-                                        <span class="text-sm font-semibold text-gray-900" x-text="'Week ' + week.week_no"></span>
+                                        <span class="text-sm font-semibold text-gray-900"
+                                            x-text="'Week ' + week.week_no"></span>
                                     </td>
                                     <td class="px-4 py-3">
                                         <div class="flex items-center gap-2">
-                                            <span class="text-sm text-gray-700" x-text="formatDate(week.week_start_date)"></span>
-                                            <span class="text-xs font-mono bg-gray-100 text-gray-600 px-2 py-0.5 rounded" x-text="formatTime(week.week_start_date)"></span>
+                                            <span class="text-sm text-gray-700"
+                                                x-text="formatDate(week.week_start_date)"></span>
+                                            <span class="text-xs font-mono bg-gray-100 text-gray-600 px-2 py-0.5 rounded"
+                                                x-text="formatTime(week.week_start_date)"></span>
                                         </div>
                                     </td>
                                     <td class="px-4 py-3">
                                         <div class="flex items-center gap-2">
-                                            <span class="text-sm text-gray-700" x-text="formatDate(week.week_end_date)"></span>
-                                            <span class="text-xs font-mono bg-gray-100 text-gray-600 px-2 py-0.5 rounded" x-text="formatTime(week.week_end_date)"></span>
+                                            <span class="text-sm text-gray-700"
+                                                x-text="formatDate(week.week_end_date)"></span>
+                                            <span class="text-xs font-mono bg-gray-100 text-gray-600 px-2 py-0.5 rounded"
+                                                x-text="formatTime(week.week_end_date)"></span>
                                         </div>
                                     </td>
                                     <td class="px-4 py-3 text-center">
                                         <div class="flex items-center justify-center gap-2">
-                                            <button @click="editWeek(week)" class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition">
+                                            <button @click="editWeek(week)"
+                                                class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition">
                                                 <i class="fas fa-edit text-sm"></i>
                                             </button>
-                                            <button @click="deleteWeek(week.id)" class="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition">
+                                            <button @click="deleteWeek(week.id)"
+                                                class="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition">
                                                 <i class="fas fa-trash text-sm"></i>
                                             </button>
                                         </div>
@@ -160,12 +179,14 @@
         </div>
 
         <!-- Edit Crop Year Modal -->
-        <div x-show="showCropYearModal" class="fixed inset-0 z-50 flex items-center justify-center" style="display: none;">
+        <div x-show="showCropYearModal" class="fixed inset-0 z-50 flex items-center justify-center"
+            style="display: none;">
             <div class="fixed inset-0 bg-black/50" @click="showCropYearModal = false"></div>
             <div class="relative bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 mx-4">
                 <h3 class="text-lg font-bold text-gray-900 mb-4">Edit Crop Year</h3>
                 <form @submit.prevent="saveCropYear()">
-                    <input type="text" x-model="cropYearForm.crop_year" placeholder="e.g., 20252026" maxlength="8" required
+                    <input type="text" x-model="cropYearForm.crop_year" placeholder="e.g., 20252026" maxlength="8"
+                        required
                         class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm mb-4 focus:ring-2 focus:ring-primary-500">
                     <div class="flex gap-3">
                         <button type="button" @click="showCropYearModal = false"
@@ -183,11 +204,13 @@
             <div class="relative bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 mx-4">
                 <h3 class="text-lg font-bold text-gray-900 mb-4">Edit Week</h3>
                 <form @submit.prevent="saveWeek()" class="space-y-3">
-                    <input type="text" x-model="weekForm.crop_year" placeholder="Crop Year (e.g., 20252026)" maxlength="8" required
+                    <input type="text" x-model="weekForm.crop_year" placeholder="Crop Year (e.g., 20252026)"
+                        maxlength="8" required
                         class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary-500">
-                    <input type="number" x-model="weekForm.week_no" placeholder="Week Number" min="1" max="52" required
+                    <input type="number" x-model="weekForm.week_no" placeholder="Week Number" min="1"
+                        max="52" required
                         class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary-500">
-                    
+
                     <!-- Start Date & Time -->
                     <div>
                         <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Start Date & Time</label>
@@ -198,7 +221,7 @@
                                 class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary-500">
                         </div>
                     </div>
-                    
+
                     <!-- End Date & Time -->
                     <div>
                         <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">End Date & Time</label>
@@ -228,7 +251,9 @@
                 showWeekModal: false,
                 editingCropYearId: null,
                 editingWeekId: null,
-                cropYearForm: { crop_year: '' },
+                cropYearForm: {
+                    crop_year: ''
+                },
                 weekForm: {
                     crop_year: '',
                     week_no: '',
@@ -296,26 +321,29 @@
 
                 formatDate(dateString) {
                     if (!dateString) return 'N/A';
-                    const date = new Date(dateString.replace(' ', 'T'));
-                    return date.toLocaleDateString('en-US', {
-                        month: 'short',
-                        day: '2-digit',
-                        year: 'numeric'
-                    });
+                    if (/^\d{4}-\d{4}$/.test(dateString)) return dateString;
+                    const match = dateString.match(/^(\d{4})-(\d{2})-(\d{2})/);
+                    if (match) {
+                        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                        return months[parseInt(match[2]) - 1] + ' ' + parseInt(match[3]) + ', ' + match[1];
+                    }
+                    return dateString;
                 },
 
                 formatTime(dateString) {
                     if (!dateString) return '--:--:--';
-                    const date = new Date(dateString.replace(' ', 'T'));
-                    const hours = String(date.getHours()).padStart(2, '0');
-                    const minutes = String(date.getMinutes()).padStart(2, '0');
-                    const seconds = String(date.getSeconds()).padStart(2, '0');
-                    return hours + ':' + minutes + ':' + seconds;
+                    let match = dateString.match(/(\d{2}):(\d{2}):(\d{2})/);
+                    if (match) return match[1] + ':' + match[2] + ':' + match[3];
+                    match = dateString.match(/(\d{2}):(\d{2})/);
+                    if (match) return match[1] + ':' + match[2] + ':00';
+                    return '--:--:--';
                 },
 
                 editCropYear(id, cropYear) {
                     this.editingCropYearId = id;
-                    this.cropYearForm = { crop_year: cropYear };
+                    this.cropYearForm = {
+                        crop_year: cropYear
+                    };
                     this.showCropYearModal = true;
                 },
 
@@ -336,11 +364,21 @@
                         });
                         const data = await response.json();
                         if (!response.ok) throw new Error(data.message || 'Failed');
-                        Swal.fire({ icon: 'success', title: 'Success!', text: data.message, timer: 2000, showConfirmButton: false });
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success!',
+                            text: data.message,
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
                         this.showCropYearModal = false;
                         setTimeout(() => location.reload(), 1500);
                     } catch (error) {
-                        Swal.fire({ icon: 'error', title: 'Error', text: error.message });
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: error.message
+                        });
                     }
                 },
 
@@ -364,47 +402,75 @@
                         });
                         const data = await response.json();
                         if (!response.ok) throw new Error(data.message);
-                        Swal.fire({ icon: 'success', title: 'Deleted!', text: data.message, timer: 2000, showConfirmButton: false });
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Deleted!',
+                            text: data.message,
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
                         setTimeout(() => location.reload(), 1500);
                     } catch (error) {
-                        Swal.fire({ icon: 'error', title: 'Error', text: error.message });
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: error.message
+                        });
                     }
                 },
 
                 editWeek(week) {
                     this.editingWeekId = week.id;
-                    const startDate = week.week_start_date ? new Date(week.week_start_date.replace(' ', 'T')) : null;
-                    const endDate = week.week_end_date ? new Date(week.week_end_date.replace(' ', 'T')) : null;
-                    
+                    const extractDateTime = (dateString) => {
+                        if (!dateString) return {
+                            date: '',
+                            time: '00:00:00'
+                        };
+                        const fullMatch = dateString.match(/^(\d{4}-\d{2}-\d{2})\s+(\d{2}:\d{2}):?(\d{2})?$/);
+                        if (fullMatch) return {
+                            date: fullMatch[1],
+                            time: fullMatch[2] + ':' + (fullMatch[3] || '00')
+                        };
+                        const tMatch = dateString.match(/^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2}):?(\d{2})?/);
+                        if (tMatch) return {
+                            date: tMatch[1],
+                            time: tMatch[2] + ':' + (tMatch[3] || '00')
+                        };
+                        return {
+                            date: '',
+                            time: '00:00:00'
+                        };
+                    };
+                    const start = extractDateTime(week.week_start_date);
+                    const end = extractDateTime(week.week_end_date);
                     this.weekForm = {
                         crop_year: week.crop_year,
                         week_no: week.week_no,
-                        week_start_date: startDate ? startDate.toISOString().split('T')[0] : '',
-                        week_start_time: startDate ? 
-                            String(startDate.getHours()).padStart(2, '0') + ':' + 
-                            String(startDate.getMinutes()).padStart(2, '0') + ':' + 
-                            String(startDate.getSeconds()).padStart(2, '0') : '00:00:00',
-                        week_end_date: endDate ? endDate.toISOString().split('T')[0] : '',
-                        week_end_time: endDate ? 
-                            String(endDate.getHours()).padStart(2, '0') + ':' + 
-                            String(endDate.getMinutes()).padStart(2, '0') + ':' + 
-                            String(endDate.getSeconds()).padStart(2, '0') : '23:59:59'
+                        week_start_date: start.date,
+                        week_start_time: start.time,
+                        week_end_date: end.date,
+                        week_end_time: end.time
                     };
                     this.showWeekModal = true;
                 },
 
                 async saveWeek() {
-                    const weekStart = this.weekForm.week_start_date + ' ' + this.weekForm.week_start_time;
-                    const weekEnd = this.weekForm.week_end_date + ' ' + this.weekForm.week_end_time;
-
+                    const startTime = this.weekForm.week_start_time.length === 5 ? this.weekForm.week_start_time +
+                        ':00' : this.weekForm.week_start_time;
+                    const endTime = this.weekForm.week_end_time.length === 5 ? this.weekForm.week_end_time + ':00' :
+                        this.weekForm.week_end_time;
+                    const weekStart = this.weekForm.week_start_date + ' ' + startTime;
+                    const weekEnd = this.weekForm.week_end_date + ' ' + endTime;
                     if (new Date(weekEnd) <= new Date(weekStart)) {
-                        Swal.fire({ icon: 'error', title: 'Error', text: 'End date/time must be after start date/time' });
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'End date/time must be after start date/time'
+                        });
                         return;
                     }
-
-                    const url = '/week/' + this.editingWeekId;
                     try {
-                        const response = await fetch(url, {
+                        const response = await fetch('/week/' + this.editingWeekId, {
                             method: 'PUT',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -421,11 +487,21 @@
                         });
                         const data = await response.json();
                         if (!response.ok) throw new Error(data.message || 'Failed');
-                        Swal.fire({ icon: 'success', title: 'Success!', text: data.message, timer: 2000, showConfirmButton: false });
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success!',
+                            text: data.message,
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
                         this.showWeekModal = false;
                         setTimeout(() => location.reload(), 1500);
                     } catch (error) {
-                        Swal.fire({ icon: 'error', title: 'Error', text: error.message });
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: error.message
+                        });
                     }
                 },
 
@@ -449,10 +525,20 @@
                         });
                         const data = await response.json();
                         if (!response.ok) throw new Error(data.message);
-                        Swal.fire({ icon: 'success', title: 'Deleted!', text: data.message, timer: 2000, showConfirmButton: false });
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Deleted!',
+                            text: data.message,
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
                         setTimeout(() => location.reload(), 1500);
                     } catch (error) {
-                        Swal.fire({ icon: 'error', title: 'Error', text: error.message });
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: error.message
+                        });
                     }
                 }
             };

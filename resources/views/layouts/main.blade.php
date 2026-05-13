@@ -805,7 +805,7 @@
                     </div>
                 </div>
             </div>
-        `,
+                `,
                 showCancelButton: true,
                 confirmButtonText: '<i class="fas fa-save mr-2"></i> Save Week',
                 cancelButtonText: '<i class="fas fa-times mr-2"></i> Cancel',
