@@ -751,158 +751,134 @@
             });
         }
 
-    function openWeekNumberModal() {
-    Swal.fire({
-        title: 'Add Week Number',
-        html: swalCustomStyles + `
-    <div style="padding: 0.5rem 0;">
-        <div class="input-group">
-            <label class="form-label"><i class="fas fa-calendar-alt"></i> Crop Year</label>
-            <div class="input-icon-wrapper">
-                <i class="fas fa-calendar-alt"></i>
-                <select id="crop_year" class="swal2-select">
-                    <option value="">Select crop year</option>
-                    @foreach (App\Models\CropYear::pluck('crop_year') as $year)
-                        <option value="{{ $year }}">{{ $year }}</option>
-                    @endforeach
-                </select>
-            </div>
-        </div>
-        
-        <div class="input-group">
-            <label class="form-label"><i class="fas fa-hashtag"></i> Week Number</label>
-            <div class="input-icon-wrapper">
-                <i class="fas fa-hashtag"></i>
-                <input type="number" id="week_no" class="swal2-input" placeholder="Enter week number (e.g., 1)" min="1" max="52">
-            </div>
-        </div>
-        
-        <div class="input-group">
-            <label class="form-label"><i class="fas fa-play-circle"></i> Week Start</label>
-            <div class="grid grid-cols-2 gap-2">
-                <div class="input-icon-wrapper">
-                    <i class="fas fa-calendar"></i>
-                    <input type="date" id="week_start_date" class="swal2-input" style="padding-left: 2.75rem;">
+        function openWeekNumberModal() {
+            Swal.fire({
+                title: 'Add Week Number',
+                html: swalCustomStyles + `
+            <div style="padding: 0.5rem 0;">
+                <div class="input-group">
+                    <label class="form-label"><i class="fas fa-calendar-alt"></i> Crop Year</label>
+                    <div class="input-icon-wrapper">
+                        <i class="fas fa-calendar-alt"></i>
+                        <select id="crop_year" class="swal2-select">
+                            <option value="">Select crop year</option>
+                            @foreach (App\Models\CropYear::pluck('crop_year') as $year)
+                                <option value="{{ $year }}">{{ $year }}</option>
+                            @endforeach
+                        </select>
+                    </div>
                 </div>
-                <div class="input-icon-wrapper">
-                    <i class="fas fa-clock"></i>
-                    <select id="week_start_time" class="swal2-select" style="padding-left: 2.75rem;">
-                        ${generate24HourOptions('00:00')}
-                    </select>
+                
+                <div class="input-group">
+                    <label class="form-label"><i class="fas fa-hashtag"></i> Week Number</label>
+                    <div class="input-icon-wrapper">
+                        <i class="fas fa-hashtag"></i>
+                        <input type="number" id="week_no" class="swal2-input" placeholder="Enter week number (e.g., 1)" min="1" max="52">
+                    </div>
                 </div>
-            </div>
-            <p class="text-xs text-gray-400 mt-1">24-hour format (00:00 to 23:59)</p>
-        </div>
-        
-        <div class="input-group">
-            <label class="form-label"><i class="fas fa-stop-circle"></i> Week End</label>
-            <div class="grid grid-cols-2 gap-2">
-                <div class="input-icon-wrapper">
-                    <i class="fas fa-calendar"></i>
-                    <input type="date" id="week_end_date" class="swal2-input" style="padding-left: 2.75rem;">
+                
+                <div class="input-group">
+                    <label class="form-label"><i class="fas fa-play-circle"></i> Week Start</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div class="input-icon-wrapper">
+                            <i class="fas fa-calendar"></i>
+                            <input type="date" id="week_start_date" class="swal2-input" style="padding-left: 2.75rem;">
+                        </div>
+                        <div class="input-icon-wrapper">
+                            <i class="fas fa-clock"></i>
+                            <input type="time" id="week_start_time" class="swal2-input" value="00:00:00" step="1" style="padding-left: 2.75rem;">
+                        </div>
+                    </div>
                 </div>
-                <div class="input-icon-wrapper">
-                    <i class="fas fa-clock"></i>
-                    <select id="week_end_time" class="swal2-select" style="padding-left: 2.75rem;">
-                        ${generate24HourOptions('23:59')}
-                    </select>
+                
+                <div class="input-group">
+                    <label class="form-label"><i class="fas fa-stop-circle"></i> Week End</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div class="input-icon-wrapper">
+                            <i class="fas fa-calendar"></i>
+                            <input type="date" id="week_end_date" class="swal2-input" style="padding-left: 2.75rem;">
+                        </div>
+                        <div class="input-icon-wrapper">
+                            <i class="fas fa-clock"></i>
+                            <input type="time" id="week_end_time" class="swal2-input" value="23:59:59" step="1" style="padding-left: 2.75rem;">
+                        </div>
+                    </div>
                 </div>
             </div>
-            <p class="text-xs text-gray-400 mt-1">24-hour format (00:00 to 23:59)</p>
-        </div>
-    </div>
-             `,
-        showCancelButton: true,
-        confirmButtonText: '<i class="fas fa-save mr-2"></i> Save Week',
-        cancelButtonText: '<i class="fas fa-times mr-2"></i> Cancel',
-        preConfirm: () => {
-            const cropYear = document.getElementById('crop_year').value;
-            const weekNo = document.getElementById('week_no').value;
-            const startDate = document.getElementById('week_start_date').value;
-            const startTime = document.getElementById('week_start_time').value;
-            const endDate = document.getElementById('week_end_date').value;
-            const endTime = document.getElementById('week_end_time').value;
+        `,
+                showCancelButton: true,
+                confirmButtonText: '<i class="fas fa-save mr-2"></i> Save Week',
+                cancelButtonText: '<i class="fas fa-times mr-2"></i> Cancel',
+                preConfirm: () => {
+                    const cropYear = document.getElementById('crop_year').value;
+                    const weekNo = document.getElementById('week_no').value;
+                    const startDate = document.getElementById('week_start_date').value;
+                    const startTime = document.getElementById('week_start_time').value || '00:00:00';
+                    const endDate = document.getElementById('week_end_date').value;
+                    const endTime = document.getElementById('week_end_time').value || '23:59:59';
 
-            if (!cropYear || !weekNo || !startDate || !endDate) {
-                Swal.showValidationMessage('Please fill all fields');
-                return false;
-            }
-
-            // Format as YYYY-MM-DD HH:MM:SS (24-hour format)
-            const weekStart = startDate + ' ' + startTime + ':00';
-            const weekEnd = endDate + ' ' + endTime + ':00';
-
-            // Validate using 24-hour comparison
-            const startDateTime = new Date(weekStart);
-            const endDateTime = new Date(weekEnd);
-
-            if (isNaN(startDateTime.getTime()) || isNaN(endDateTime.getTime())) {
-                Swal.showValidationMessage('Invalid date format');
-                return false;
-            }
-
-            if (endDateTime <= startDateTime) {
-                Swal.showValidationMessage('End date/time must be after start date/time');
-                return false;
-            }
-
-            return fetch('{{ url('/updates/add-week-number') }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        crop_year: cropYear,
-                        week_no: weekNo,
-                        week_start_date: weekStart,
-                        week_end_date: weekEnd,
-                        user_id: '{{ auth()->id() }}'
-                    })
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Server error');
+                    if (!cropYear || !weekNo || !startDate || !endDate) {
+                        Swal.showValidationMessage('Please fill all fields');
+                        return false;
                     }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.message) {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Success!',
-                            text: data.message,
-                            timer: 2000,
-                            showConfirmButton: false
+
+                    const weekStart = startDate + ' ' + startTime;
+                    const weekEnd = endDate + ' ' + endTime;
+
+                    if (new Date(weekEnd) <= new Date(weekStart)) {
+                        Swal.showValidationMessage('End date/time must be after start date/time');
+                        return false;
+                    }
+
+                    return fetch('{{ url('/updates/add-week-number') }}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                crop_year: cropYear,
+                                week_no: weekNo,
+                                week_start_date: weekStart,
+                                week_end_date: weekEnd,
+                                user_id: '{{ auth()->id() }}'
+                            })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.message) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Success!',
+                                    text: data.message,
+                                    timer: 2000,
+                                    showConfirmButton: false
+                                });
+                                refreshDashboardData();
+                            }
+                        })
+                        .catch(error => {
+                            Swal.showValidationMessage('Failed to save. Please try again.');
                         });
-                        if (typeof refreshDashboardData === 'function') {
-                            refreshDashboardData();
-                        }
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    Swal.showValidationMessage('Failed to save. Please try again.');
-                });
+                }
+            });
         }
-    });
-}
 
-// Helper function to generate 24-hour time options
-function generate24HourOptions(defaultValue = '00:00') {
-    let options = '';
-    for (let hour = 0; hour < 24; hour++) {
-        for (let minute = 0; minute < 60; minute += 30) {
-            const hourStr = String(hour).padStart(2, '0');
-            const minuteStr = String(minute).padStart(2, '0');
-            const timeValue = `${hourStr}:${minuteStr}`;
-            const selected = timeValue === defaultValue ? 'selected' : '';
-            options += `<option value="${timeValue}" ${selected}>${timeValue}</option>`;
+        // Helper function to generate 24-hour time options
+        function generate24HourOptions(defaultValue = '00:00') {
+            let options = '';
+            for (let hour = 0; hour < 24; hour++) {
+                for (let minute = 0; minute < 60; minute += 30) {
+                    const hourStr = String(hour).padStart(2, '0');
+                    const minuteStr = String(minute).padStart(2, '0');
+                    const timeValue = `${hourStr}:${minuteStr}`;
+                    const selected = timeValue === defaultValue ? 'selected' : '';
+                    options += `<option value="${timeValue}" ${selected}>${timeValue}</option>`;
+                }
+            }
+            return options;
         }
-    }
-    return options;
-}
 
         function openUploadModal(type) {
             const titles = {
