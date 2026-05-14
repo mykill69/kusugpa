@@ -294,34 +294,65 @@
                 <!-- Recent Prices -->
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100">
                     <div class="p-5 border-b border-gray-100">
-                        <h3 class="text-lg font-bold text-gray-900">Price Updates</h3>
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-lg font-bold text-gray-900">Price Updates</h3>
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs text-gray-400" x-text="recentPrices.length + ' records'"></span>
+                            </div>
+                        </div>
                     </div>
                     <div class="overflow-x-auto">
-                        <table class="w-full">
-                            <thead>
-                                <tr class="text-xs text-gray-400 border-b border-gray-50">
-                                    <th class="py-2 px-3 text-left font-medium">Type</th>
-                                    <th class="py-2 px-3 text-left font-medium">Week</th>
-                                    <th class="py-2 px-3 text-right font-medium">Price</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <template x-for="price in recentPrices.slice(0, 5)" :key="price.id">
-                                    <tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
-                                        <td class="py-2.5 px-3">
-                                            <span
-                                                :class="price.type === 'Quedan' ? 'bg-green-100 text-green-700' :
-                                                    'bg-blue-100 text-blue-700'"
-                                                class="px-2 py-0.5 text-xs font-medium rounded-full"
-                                                x-text="price.type"></span>
-                                        </td>
-                                        <td class="py-2.5 px-3 text-sm text-gray-600" x-text="'W' + price.week_no"></td>
-                                        <td class="py-2.5 px-3 text-sm font-semibold text-gray-900 text-right">₱<span
-                                                x-text="formatNumber(price.price, 2)"></span></td>
+                        <div class="overflow-y-auto" style="max-height: 260px;">
+                            <table class="w-full">
+                                <thead class="sticky top-0 bg-gray-50 z-10">
+                                    <tr class="text-xs text-gray-400 border-b border-gray-100">
+                                        <th class="py-2.5 px-3 text-left font-medium">Type</th>
+                                        <th class="py-2.5 px-3 text-left font-medium">Crop Year</th>
+                                        <th class="py-2.5 px-3 text-left font-medium">Week</th>
+                                        <th class="py-2.5 px-3 text-left font-medium">Date</th>
+                                        <th class="py-2.5 px-3 text-right font-medium">Price</th>
                                     </tr>
-                                </template>
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody class="divide-y divide-gray-50">
+                                    <template x-for="price in sortedRecentPrices.slice(0, 5)" :key="price.id">
+                                        <tr class="hover:bg-gray-50/50 transition-colors">
+                                            <td class="py-2.5 px-3">
+                                                <span
+                                                    :class="price.type === 'Quedan' ? 'bg-green-100 text-green-700' :
+                                                        'bg-blue-100 text-blue-700'"
+                                                    class="px-2 py-0.5 text-xs font-medium rounded-full"
+                                                    x-text="price.type"></span>
+                                            </td>
+                                            <td class="py-2.5 px-3">
+                                                <span
+                                                    class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full font-mono"
+                                                    x-text="price.crop_year"></span>
+                                            </td>
+                                            <td class="py-2.5 px-3 text-sm text-gray-600">
+                                                <span x-text="'Week ' + price.week_no"></span>
+                                            </td>
+                                            <td class="py-2.5 px-3 text-xs text-gray-500" x-text="price.date"></td>
+                                            <td class="py-2.5 px-3 text-sm font-semibold text-gray-900 text-right">
+                                                ₱<span x-text="formatNumber(price.price, 2)"></span>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                    <tr x-show="recentPrices.length === 0">
+                                        <td colspan="5" class="py-8 text-center text-gray-400">
+                                            <i class="fas fa-tags text-2xl text-gray-200 mb-1 block"></i>
+                                            No price updates yet
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <!-- Show more indicator -->
+                    <div x-show="recentPrices.length > 5"
+                        class="px-5 py-2.5 border-t border-gray-100 bg-gray-50/50 text-center">
+                        <span class="text-xs text-gray-400">
+                            Showing 5 of <span x-text="recentPrices.length"></span> records. Scroll for more.
+                        </span>
                     </div>
                 </div>
             </div>
@@ -421,6 +452,29 @@
                         } catch (error) {
                             console.error('Error:', error);
                         }
+                    },
+
+                    get sortedRecentPrices() {
+                        return [...this.recentPrices].sort((a, b) => {
+                            // Sort by date descending first
+                            const dateA = new Date(a.date);
+                            const dateB = new Date(b.date);
+                            if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) return 0;
+                            return dateB - dateA;
+                        });
+                    },
+
+                    get sortedRecentPrices() {
+                        return [...this.recentPrices].sort((a, b) => {
+                            // Sort by type first (Quedan before Molasses), then by latest
+                            if (a.type !== b.type) {
+                                return a.type === 'Quedan' ? -1 : 1;
+                            }
+                            // Extract numeric ID (remove prefix like 'q_' or 'm_')
+                            const idA = parseInt(String(a.id).replace(/\D/g, ''));
+                            const idB = parseInt(String(b.id).replace(/\D/g, ''));
+                            return idB - idA;
+                        });
                     },
 
                     createCharts() {
