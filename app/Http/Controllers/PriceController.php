@@ -122,8 +122,11 @@ class PriceController extends Controller
 
     public function registry()
 {
+    $quedans = Quedan::orderBy('planter_name')->get();
+    $molassesList = Molass::orderBy('planter_name')->get();
     $cropYears = CropYear::orderBy('crop_year')->pluck('crop_year');
-    return view('prices.registry', compact('cropYears'));
+    
+    return view('prices.registry', compact('quedans', 'molassesList', 'cropYears'));
 }
 
 public function registryData(Request $request)
