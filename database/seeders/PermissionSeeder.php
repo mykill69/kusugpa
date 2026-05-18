@@ -40,6 +40,11 @@ class PermissionSeeder extends Seeder
                 'description' => 'Can manage crop years and week numbers',
             ],
             [
+                'name' => 'Manage Prices',
+                'slug' => 'manage-prices',
+                'description' => 'Can manage quedan and molasses prices',
+            ],
+            [
                 'name' => 'Upload Summary',
                 'slug' => 'upload-summary',
                 'description' => 'Can upload summary CSV files',
@@ -113,6 +118,41 @@ class PermissionSeeder extends Seeder
                 'name' => 'Manage Loan Settings',
                 'slug' => 'manage-loan-settings',
                 'description' => 'Can configure loan types, interest rates, and settings',
+            ],
+            [
+                'name' => 'View Audit Logs',
+                'slug' => 'view-audit-logs',
+                'description' => 'Can view system audit logs and activity trail',
+            ],
+            [
+                'name' => 'Manage Planter Profiles',
+                'slug' => 'manage-planter-profiles',
+                'description' => 'Can create, edit, and manage planter profiles',
+            ],
+            [
+                'name' => 'View Planter Profiles',
+                'slug' => 'view-planter-profiles',
+                'description' => 'Can view planter profiles and details',
+            ],
+            [
+                'name' => 'Upload Consolidated',
+                'slug' => 'upload-consolidated',
+                'description' => 'Can upload consolidated summary CSV files',
+            ],
+            [
+                'name' => 'View Consolidated Report',
+                'slug' => 'view-consolidated-report',
+                'description' => 'Can view consolidated upload summary report',
+            ],
+            [
+                'name' => 'Upload Quedan',
+                'slug' => 'upload-quedan',
+                'description' => 'Can upload quedan CSV files',
+            ],
+            [
+                'name' => 'Upload Molasses Data',
+                'slug' => 'upload-molasses',
+                'description' => 'Can upload molasses CSV files',
             ],
         ];
 

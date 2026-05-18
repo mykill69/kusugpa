@@ -10,6 +10,11 @@ use App\Http\Controllers\LoanController;
 use App\Http\Controllers\LoanReportController;
 use App\Http\Controllers\LoanAttachmentController; 
 use App\Http\Controllers\CropWeekController;  
+use App\Http\Controllers\PriceController;  
+use App\Http\Controllers\AuditLogController;  
+use App\Http\Controllers\PlanterProfileController;
+use App\Http\Controllers\ConsolidatedReportController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -93,8 +98,12 @@ Route::middleware(['login_auth'])->group(function () {
         ->name('updates.addMolassesPrice');
 
     // Upload Routes
+    // Route::post('/upload/{type}', [UploadController::class, 'uploadCSV'])
+    // ->where('type', 'summary|trucking|fuel|rentals|underload|transloading|fci|mudpress')
+    // ->name('upload.csv');
+
     Route::post('/upload/{type}', [UploadController::class, 'uploadCSV'])
-    ->where('type', 'summary|trucking|fuel|rentals|underload|transloading|fci|mudpress')
+    ->where('type', 'summary|trucking|fuel|rentals|underload|transloading|fci|mudpress|consolidated')
     ->name('upload.csv');
 
     // Dashboard API endpoints
@@ -107,6 +116,10 @@ Route::middleware(['login_auth'])->group(function () {
     Route::get('/summary-report/weeks', [MenuController::class, 'getWeeksByCropYear'])->name('summaryReport.weeks');
     Route::get('/summary/pdf-preview', [MenuController::class, 'previewPDF'])->name('summary.previewPDF');
     Route::get('/summary/download-pdf', [MenuController::class, 'downloadPDF'])->name('summary.downloadPDF');
+
+    // Consolidated Report - ADD THESE
+    Route::get('/consolidated-report', [ConsolidatedReportController::class, 'index'])->name('consolidated-report');
+    Route::get('/consolidated-report/export', [ConsolidatedReportController::class, 'exportPDF'])->name('consolidated-report.export');
     
 
     // Print Voucher
@@ -144,5 +157,54 @@ Route::middleware(['login_auth:manage-crop-weeks'])->group(function () {
     Route::delete('/crop-year/{cropYear}', [CropWeekController::class, 'destroyCropYear'])->name('crop-year.destroy');
     Route::put('/week/{weekNo}', [CropWeekController::class, 'updateWeek'])->name('week.update');
     Route::delete('/week/{weekNo}', [CropWeekController::class, 'destroyWeek'])->name('week.destroy');
+
+    // Price Management
+    Route::get('/prices', [PriceController::class, 'index'])->name('prices.index');
+    Route::put('/prices/quedan/{quedanPrice}', [PriceController::class, 'updateQuedanPrice'])->name('prices.quedan.update');
+    Route::delete('/prices/quedan/{quedanPrice}', [PriceController::class, 'destroyQuedanPrice'])->name('prices.quedan.destroy');
+    Route::put('/prices/molasses/{molassesPrice}', [PriceController::class, 'updateMolassesPrice'])->name('prices.molasses.update');
+    Route::delete('/prices/molasses/{molassesPrice}', [PriceController::class, 'destroyMolassesPrice'])->name('prices.molasses.destroy');
+
+    Route::get('/quedan-molasses-registry', [PriceController::class, 'registry'])->name('quedan-molasses-registry');
+    // Buy Quedan
+    Route::get('/buy-quedan', [PriceController::class, 'buyQuedan'])->name('quedan-buy.index');
+    Route::post('/quedans/bulk-update', [PriceController::class, 'bulkUpdateQuedan'])->name('quedans.bulk-update');
+    // routes/web.php
+    Route::get('/quedan-molasses-registry/data', [PriceController::class, 'registryData'])->name('registry.data');
+
+    // Buy Molasses
+    Route::get('/buy-molasses', [PriceController::class, 'buyMolasses'])->name('molasses-buy.index');
+    Route::post('/molasses/bulk-update', [PriceController::class, 'bulkUpdateMolasses'])->name('molasses.bulk-update');
+
+    Route::post('/upload/{type}', [UploadController::class, 'uploadCSV'])
+    ->where('type', 'summary|trucking|fuel|rentals|underload|transloading|fci|mudpress|consolidated|quedan|molasses')
+    ->name('upload.csv');
+
+    Route::get('/quedan-registry/export', [PriceController::class, 'exportQuedanPDF'])->name('quedan-registry.export');
+    Route::get('/molasses-registry/export', [PriceController::class, 'exportMolassesPDF'])->name('molasses-registry.export');
+
+    // Audit Logs
+    Route::get('/audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index');
+    Route::get('/audit-logs/{log}', [AuditLogController::class, 'show'])->name('audit-logs.show');
+    Route::get('/audit-logs/export/pdf', [AuditLogController::class, 'exportPDF'])->name('audit-logs.export');
+    Route::post('/audit-logs/clear', [AuditLogController::class, 'clear'])->name('audit-logs.clear');
+    Route::get('/audit-logs/load-more', [AuditLogController::class, 'loadMore'])->name('audit-logs.load-more');
+
+
+    // Planter Profiles - Static routes BEFORE wildcard
+    Route::get('/planter-profiles', [PlanterProfileController::class, 'index'])->name('planter-profiles.index');
+    Route::get('/planter-profiles/load-more', [PlanterProfileController::class, 'loadMore'])->name('planter-profiles.load-more');
+    Route::post('/planter-profiles/sync', [PlanterProfileController::class, 'syncPlanters'])->name('planter-profiles.sync');
+    Route::get('/planter-profiles/export/pdf', [PlanterProfileController::class, 'exportPDF'])->name('planter-profiles.export');
+
+    // Individual planter routes
+    Route::get('/planter-profiles/{planter}', [PlanterProfileController::class, 'show'])->name('planter-profiles.show');
+    Route::post('/planter-profiles', [PlanterProfileController::class, 'store'])->name('planter-profiles.store');
+    Route::put('/planter-profiles/{planter}', [PlanterProfileController::class, 'update'])->name('planter-profiles.update');
+    Route::delete('/planter-profiles/{planter}', [PlanterProfileController::class, 'destroy'])->name('planter-profiles.destroy');
+    Route::post('/planter-profiles/{planter}/toggle-status', [PlanterProfileController::class, 'toggleStatus'])->name('planter-profiles.toggle');
+
 });
+
+
 });

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Permission;
+use App\Models\AuditLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
@@ -45,18 +46,14 @@ class UserManagementController extends Controller
 
         $currentUser = auth()->user();
 
-        // Only Administrator can create Administrator accounts
         if ($request->role === 'Administrator' && $currentUser->role !== 'Administrator') {
-            return response()->json([
-                'message' => 'Only an Administrator can create Administrator accounts.'
-            ], 403);
+            AuditLog::log('error', 'users', 'Unauthorized attempt to create Administrator account');
+            return response()->json(['message' => 'Only an Administrator can create Administrator accounts.'], 403);
         }
 
-        // Only Administrator or super_admin can create super_admin accounts
         if ($request->role === 'super_admin' && !in_array($currentUser->role, ['Administrator', 'super_admin'])) {
-            return response()->json([
-                'message' => 'Only an Administrator or Super Admin can create Super Admin accounts.'
-            ], 403);
+            AuditLog::log('error', 'users', 'Unauthorized attempt to create Super Admin account');
+            return response()->json(['message' => 'Only an Administrator or Super Admin can create Super Admin accounts.'], 403);
         }
 
         $user = User::create([
@@ -68,6 +65,11 @@ class UserManagementController extends Controller
             'role' => $request->role,
         ]);
 
+        AuditLog::log('create', 'users', 'Created user: ' . $user->username . ' with role ' . $user->role, [
+            'user_id' => $user->id,
+            'created_by' => $currentUser->username
+        ]);
+
         return response()->json([
             'message' => 'User created successfully',
             'user' => $user->load('permissions')
@@ -77,30 +79,28 @@ class UserManagementController extends Controller
     public function update(Request $request, User $user)
     {
         $request->validate([
-        'fname' => ['required', 'string', 'max:255'],
-        'lname' => ['nullable', 'string', 'max:255'],
-        'username' => ['required', 'string', 'max:255', 'unique:users,username,' . $user->id],
-        'role' => ['required', 'in:Administrator,super_admin,manager,loan_officer,User,Viewer'],
-    ]);
+            'fname' => ['required', 'string', 'max:255'],
+            'lname' => ['nullable', 'string', 'max:255'],
+            'username' => ['required', 'string', 'max:255', 'unique:users,username,' . $user->id],
+            'role' => ['required', 'in:Administrator,super_admin,manager,loan_officer,User,Viewer'],
+        ]);
 
         $currentUser = auth()->user();
         $isOwnAccount = $user->id === $currentUser->id;
+        $oldRole = $user->role;
 
-        // Administrator can edit their own account (but cannot change their own role)
         if ($isOwnAccount && $currentUser->role === 'Administrator') {
             if ($request->role !== 'Administrator') {
-                return response()->json([
-                    'message' => 'You cannot change your own role from Administrator.'
-                ], 403);
+                AuditLog::log('error', 'users', 'Administrator attempted to change own role');
+                return response()->json(['message' => 'You cannot change your own role from Administrator.'], 403);
             }
             
-            // Allow Administrator to update their own info (name, username, password)
             $updateData = [
                 'fname' => $request->fname,
                 'mname' => $request->mname ?? $user->mname,
                 'lname' => $request->lname ?? '',
                 'username' => $request->username,
-                'role' => $request->role, // Must remain Administrator
+                'role' => $request->role,
             ];
 
             if ($request->filled('password')) {
@@ -110,58 +110,46 @@ class UserManagementController extends Controller
 
             $user->update($updateData);
 
+            AuditLog::log('update', 'users', 'Administrator updated own account', [
+                'changes' => array_keys($updateData)
+            ]);
+
             return response()->json([
                 'message' => 'Your account has been updated successfully',
                 'user' => $user->fresh()->load('permissions')
             ]);
         }
 
-        // Super admin editing their own account
         if ($isOwnAccount && $currentUser->role === 'super_admin') {
             if ($request->role !== 'super_admin') {
-                return response()->json([
-                    'message' => 'You cannot change your own role.'
-                ], 403);
+                AuditLog::log('error', 'users', 'Super admin attempted to change own role');
+                return response()->json(['message' => 'You cannot change your own role.'], 403);
             }
         }
 
-        // Other users cannot edit their own account
         if ($isOwnAccount && !in_array($currentUser->role, ['Administrator', 'super_admin'])) {
-            return response()->json([
-                'message' => 'You cannot edit your own account.'
-            ], 403);
+            AuditLog::log('error', 'users', 'User attempted to edit own account without permission');
+            return response()->json(['message' => 'You cannot edit your own account.'], 403);
         }
 
-        // Cannot modify Administrator accounts unless you're an Administrator
         if ($user->role === 'Administrator' && $currentUser->role !== 'Administrator') {
-            return response()->json([
-                'message' => 'Only an Administrator can modify Administrator accounts.'
-            ], 403);
+            AuditLog::log('error', 'users', 'Unauthorized attempt to modify Administrator account: ' . $user->username);
+            return response()->json(['message' => 'Only an Administrator can modify Administrator accounts.'], 403);
         }
 
-        // Only Administrator can promote users to Administrator
-        if ($request->role === 'Administrator' && 
-            $user->role !== 'Administrator' && 
-            $currentUser->role !== 'Administrator') {
-            return response()->json([
-                'message' => 'Only an Administrator can promote users to Administrator.'
-            ], 403);
+        if ($request->role === 'Administrator' && $user->role !== 'Administrator' && $currentUser->role !== 'Administrator') {
+            AuditLog::log('error', 'users', 'Unauthorized attempt to promote user to Administrator');
+            return response()->json(['message' => 'Only an Administrator can promote users to Administrator.'], 403);
         }
 
-        // Super admin cannot change Administrator's role
         if ($user->role === 'Administrator' && $currentUser->role === 'super_admin') {
-            return response()->json([
-                'message' => 'Super admin cannot modify Administrator accounts.'
-            ], 403);
+            AuditLog::log('error', 'users', 'Super admin attempted to modify Administrator account');
+            return response()->json(['message' => 'Super admin cannot modify Administrator accounts.'], 403);
         }
 
-        // Super admin cannot demote another super_admin (only Administrator can)
-        if ($user->role === 'super_admin' && 
-            $currentUser->role === 'super_admin' && 
-            !in_array($request->role, ['Administrator', 'super_admin'])) {
-            return response()->json([
-                'message' => 'You cannot demote other super_admin accounts. Only Administrator can do this.'
-            ], 403);
+        if ($user->role === 'super_admin' && $currentUser->role === 'super_admin' && !in_array($request->role, ['Administrator', 'super_admin'])) {
+            AuditLog::log('error', 'users', 'Super admin attempted to demote another super_admin');
+            return response()->json(['message' => 'You cannot demote other super_admin accounts. Only Administrator can do this.'], 403);
         }
 
         $updateData = [
@@ -179,6 +167,12 @@ class UserManagementController extends Controller
 
         $user->update($updateData);
 
+        AuditLog::log('update', 'users', 'Updated user: ' . $user->username, [
+            'old_role' => $oldRole,
+            'new_role' => $request->role,
+            'updated_by' => $currentUser->username
+        ]);
+
         return response()->json([
             'message' => 'User updated successfully',
             'user' => $user->fresh()->load('permissions')
@@ -189,79 +183,118 @@ class UserManagementController extends Controller
     {
         $currentUser = auth()->user();
 
-        // Cannot delete yourself
         if ($user->id === $currentUser->id) {
+            AuditLog::log('error', 'users', 'User attempted to delete own account');
             return response()->json(['message' => 'Cannot delete your own account'], 403);
         }
 
-        // Cannot delete Administrator accounts unless you're an Administrator
         if ($user->role === 'Administrator' && $currentUser->role !== 'Administrator') {
-            return response()->json([
-                'message' => 'Only an Administrator can delete Administrator accounts.'
-            ], 403);
+            AuditLog::log('error', 'users', 'Unauthorized attempt to delete Administrator: ' . $user->username);
+            return response()->json(['message' => 'Only an Administrator can delete Administrator accounts.'], 403);
         }
 
-        // Super admin cannot delete Administrator accounts
         if ($user->role === 'Administrator' && $currentUser->role === 'super_admin') {
-            return response()->json([
-                'message' => 'Super admin cannot delete Administrator accounts.'
-            ], 403);
+            AuditLog::log('error', 'users', 'Super admin attempted to delete Administrator account');
+            return response()->json(['message' => 'Super admin cannot delete Administrator accounts.'], 403);
         }
 
-        // Super admin can delete Users and Viewers, but not other super_admins
         if ($user->role === 'super_admin' && $currentUser->role === 'super_admin') {
-            return response()->json([
-                'message' => 'Super admin cannot delete other super_admin accounts. Only Administrator can do this.'
-            ], 403);
+            AuditLog::log('error', 'users', 'Super admin attempted to delete another super_admin');
+            return response()->json(['message' => 'Super admin cannot delete other super_admin accounts.'], 403);
         }
+
+        $deletedUser = [
+            'id' => $user->id,
+            'username' => $user->username,
+            'role' => $user->role,
+            'name' => $user->fname . ' ' . $user->lname
+        ];
 
         $user->permissions()->detach();
         $user->delete();
+
+        AuditLog::log('delete', 'users', 'Deleted user: ' . $deletedUser['username'], [
+            'deleted_user' => $deletedUser,
+            'deleted_by' => $currentUser->username
+        ]);
 
         return response()->json(['message' => 'User deleted successfully']);
     }
 
     public function assignPermissions(Request $request)
-    {
-        $request->validate([
-            'user_id' => ['required', 'exists:users,id'],
-            'permissions' => ['required', 'array'],
-            'permissions.*.slug' => ['required', 'string', 'exists:permissions,slug'],
-            'permissions.*.granted' => ['required', 'boolean'],
-        ]);
+{
+    $request->validate([
+        'user_id' => ['required', 'exists:users,id'],
+        'permissions' => ['required', 'array'],
+        'permissions.*.slug' => ['required', 'string', 'exists:permissions,slug'],
+        'permissions.*.granted' => ['required', 'boolean'],
+    ]);
 
-        $currentUser = auth()->user();
-        $user = User::findOrFail($request->user_id);
+    $currentUser = auth()->user();
+    $user = User::findOrFail($request->user_id);
 
-        // Don't modify Administrator or super_admin permissions
-        if ($user->role === 'Administrator' || $user->role === 'super_admin') {
-            return response()->json([
-                'message' => $user->role . ' has all permissions by default'
-            ], 403);
-        }
-
-        // Only Administrator and super_admin can manage permissions
-        if (!in_array($currentUser->role, ['Administrator', 'super_admin'])) {
-            return response()->json([
-                'message' => 'You do not have permission to manage permissions.'
-            ], 403);
-        }
-
-        $grantedSlugs = [];
-        foreach ($request->permissions as $permission) {
-            if ($permission['granted']) {
-                $grantedSlugs[] = $permission['slug'];
-            }
-        }
-        
-
-        $user->syncPermissions($grantedSlugs);
-
-        return response()->json([
-            'message' => 'Permissions updated successfully',
-            'permissions' => $user->fresh()->permissions
-        ]);
+    if ($user->role === 'Administrator' || $user->role === 'super_admin') {
+        return response()->json(['message' => $user->role . ' has all permissions by default'], 403);
     }
+
+    if (!in_array($currentUser->role, ['Administrator', 'super_admin'])) {
+        return response()->json(['message' => 'You do not have permission to manage permissions.'], 403);
+    }
+
+    // Get current permissions before update
+    $currentPermissions = $user->permissions->pluck('slug')->toArray();
+    
+    $grantedSlugs = [];
+    $revokedSlugs = [];
+    
+    foreach ($request->permissions as $permission) {
+        if ($permission['granted']) {
+            $grantedSlugs[] = $permission['slug'];
+        } else {
+            $revokedSlugs[] = $permission['slug'];
+        }
+    }
+
+    // Find which permissions are newly granted
+    $newlyGranted = array_diff($grantedSlugs, $currentPermissions);
+    
+    // Find which permissions are newly revoked
+    $newlyRevoked = array_intersect($revokedSlugs, $currentPermissions);
+
+    $user->syncPermissions($grantedSlugs);
+
+    // Get permission names for readable log
+    $grantedNames = Permission::whereIn('slug', $newlyGranted)->pluck('name')->toArray();
+    $revokedNames = Permission::whereIn('slug', $newlyRevoked)->pluck('name')->toArray();
+
+    // Build detailed description
+    $description = 'Updated permissions for: ' . $user->username;
+    $details = [
+        'user_id' => $user->id,
+        'updated_by' => $currentUser->username,
+        'granted' => $grantedNames,
+        'revoked' => $revokedNames,
+        'total_permissions' => count($grantedSlugs),
+    ];
+
+    // Create a more readable description for the logs table
+    if (!empty($newlyGranted) && !empty($newlyRevoked)) {
+        $description .= ' | Granted: ' . implode(', ', $grantedNames) . ' | Revoked: ' . implode(', ', $revokedNames);
+    } elseif (!empty($newlyGranted)) {
+        $description .= ' | Granted: ' . implode(', ', $grantedNames);
+    } elseif (!empty($newlyRevoked)) {
+        $description .= ' | Revoked: ' . implode(', ', $revokedNames);
+    } else {
+        $description .= ' | No changes made';
+    }
+
+    AuditLog::log('update', 'permissions', $description, $details);
+
+    return response()->json([
+        'message' => 'Permissions updated successfully',
+        'permissions' => $user->fresh()->permissions
+    ]);
+}
 
     public function permissionsList()
     {
@@ -276,4 +309,5 @@ class UserManagementController extends Controller
         
         return response()->json($permissions);
     }
+
 }

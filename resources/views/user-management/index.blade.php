@@ -9,8 +9,11 @@
             class="bg-gradient-to-r from-primary-700 via-primary-600 to-primary-500 rounded-2xl shadow-lg p-6 sm:p-8 text-white">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h1 class="text-2xl sm:text-3xl font-bold">User Management</h1>
-                    <p class="mt-2 text-primary-100 text-sm sm:text-base">Manage system users, roles, and permissions</p>
+                    <div class="flex items-center gap-3 mb-2">
+                        <i class="fas fa-users text-2xl"></i>
+                        <h1 class="text-2xl sm:text-3xl font-bold">User Management</h1>
+                    </div>
+                    <p class="text-slate-300 text-sm">Manage system users, roles, and permissions</p>
                 </div>
                 <div class="mt-4 sm:mt-0 flex items-center space-x-3">
                     <span class="bg-white/20 backdrop-blur-sm rounded-xl px-4 py-2 text-sm">
@@ -30,9 +33,7 @@
             <div class="p-4 sm:p-6 border-b border-gray-100">
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div class="flex items-center gap-2">
-                        <div class="bg-blue-100 rounded-lg p-2">
-                            <i class="fas fa-users-cog text-blue-600 text-sm"></i>
-                        </div>
+                        
                         <h2 class="text-lg font-bold text-gray-900">Registered Users</h2>
                     </div>
                     <div class="relative">

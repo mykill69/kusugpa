@@ -10,7 +10,7 @@
             class="bg-gradient-to-r from-primary-700 via-primary-600 to-primary-500 rounded-2xl shadow-lg p-6 sm:p-8 text-white">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h1 class="text-2xl sm:text-3xl font-bold">Welcome back, {{ auth()->user()->fname }}! 🌾</h1>
+                    <h1 class="text-2xl sm:text-3xl font-bold">Welcome back, {{ auth()->user()->fname }}!</h1>
                     <p class="mt-2 text-primary-100 text-sm sm:text-base">Here's your crop production overview for <span
                             x-text="stats.currentCropYear"></span></p>
                 </div>
@@ -216,6 +216,153 @@
             </div>
         </div>
 
+        <!-- Monthly Average Chart -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h3 class="text-lg font-bold text-gray-900">Monthly Production Average</h3>
+                    <p class="text-xs text-gray-500 mt-0.5">Average net cane per month for <span
+                            x-text="stats.currentCropYear"></span></p>
+                </div>
+            </div>
+            <div class="relative w-full" style="height: 250px;">
+                <canvas id="monthlyChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Production Distribution & Loan Overview -->
+        <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+            <!-- Production Distribution Pie Chart -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-900">Production Distribution</h3>
+                        <p class="text-xs text-gray-500 mt-0.5">How top planters contribute to total production</p>
+                    </div>
+                </div>
+                <div class="relative w-full flex items-center justify-center" style="height: 280px;">
+                    <canvas id="distributionChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Loan Overview Chart -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-900">Loan Portfolio Overview</h3>
+                        <p class="text-xs text-gray-500 mt-0.5">Active loans: <span
+                                x-text="loanStats.active_count || 0"></span> | Total: ₱<span
+                                x-text="formatNumber(loanStats.total_principal || 0, 0)"></span></p>
+                    </div>
+                </div>
+                <div class="relative w-full" style="height: 280px;">
+                    <canvas id="loanChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recommendations -->
+        {{-- <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+            <h3 class="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
+                <i class="fas fa-lightbulb text-yellow-500"></i> Recommendations
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <template x-for="rec in recommendations" :key="rec.message">
+                    <div class="flex items-start gap-3 p-3 bg-primary-50 rounded-xl">
+                        <i :class="rec.icon + ' text-primary-600 mt-0.5'"></i>
+                        <p class="text-sm text-gray-700" x-text="rec.message"></p>
+                    </div>
+                </template>
+            </div>
+        </div> --}}
+
+
+
+
+        <!-- Alerts & Critical Info -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Alerts Panel -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+                <h3 class="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
+                    <i class="fas fa-bell text-amber-500"></i> Alerts & Notifications
+                </h3>
+                <div class="space-y-2 max-h-48 overflow-y-auto">
+                    <template x-for="alert in alerts" :key="alert.title">
+                        <div :class="getAlertClass(alert.type)"
+                            class="flex items-start gap-3 p-3 rounded-xl border text-sm">
+                            <i :class="getAlertIcon(alert.type) + ' mt-0.5'"></i>
+                            <div>
+                                <p class="font-semibold" x-text="alert.title"></p>
+                                <p class="text-xs opacity-75" x-text="alert.message"></p>
+                            </div>
+                        </div>
+                    </template>
+                    <div x-show="alerts.length === 0" class="text-center py-4 text-gray-400 text-sm">
+                        <i class="fas fa-check-circle text-green-400 text-2xl mb-1 block"></i>
+                        All systems normal. No alerts.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+                <h3 class="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
+                    <i class="fas fa-tachometer-alt text-blue-500"></i> Key Metrics
+                </h3>
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="bg-gray-50 rounded-xl p-3 text-center">
+                        <p class="text-xs text-gray-500">Best Week</p>
+                        <p class="text-xl font-bold text-green-600"
+                            x-text="stats.bestWeek > 0 ? 'Week ' + stats.bestWeek : 'N/A'"></p>
+                        <p class="text-xs text-gray-400"
+                            x-text="stats.bestWeekCane > 0 ? formatNumber(stats.bestWeekCane, 0) + ' tons' : 'No data'">
+                        </p>
+                    </div>
+                    <div class="bg-gray-50 rounded-xl p-3 text-center">
+                        <p class="text-xs text-gray-500">Loan Collection</p>
+                        <p class="text-xl font-bold"
+                            :class="stats.collectionRate >= 80 ? 'text-green-600' : stats.collectionRate >= 50 ?
+                                'text-amber-600' : 'text-red-600'"
+                            x-text="stats.collectionRate + '%'"></p>
+                        <p class="text-xs text-gray-400">repayment rate</p>
+                    </div>
+                    <div class="bg-gray-50 rounded-xl p-3 text-center">
+                        <p class="text-xs text-gray-500">Pending Approvals</p>
+                        <p class="text-xl font-bold"
+                            :class="stats.pendingApprovals > 0 ? 'text-amber-600' : 'text-green-600'"
+                            x-text="stats.pendingApprovals"></p>
+                        <p class="text-xs text-gray-400">loans & requests</p>
+                    </div>
+                    <div class="bg-gray-50 rounded-xl p-3 text-center">
+                        <p class="text-xs text-gray-500">Active Loans</p>
+                        <p class="text-xl font-bold text-indigo-600" x-text="loanStats.active_count || 0"></p>
+                        <p class="text-xs text-gray-400">currently running</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- At-Risk Planters -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+                <h3 class="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
+                    <i class="fas fa-exclamation-triangle text-red-500"></i> Low Production Alert
+                </h3>
+                <p class="text-xs text-gray-500 mb-2">Planters with less than 5 tons this season</p>
+                <div class="space-y-2 max-h-48 overflow-y-auto">
+                    <template x-for="planter in riskPlanters" :key="planter.planter_code">
+                        <div class="flex items-center justify-between p-2 bg-red-50 rounded-lg">
+                            <span class="text-sm font-medium text-gray-900" x-text="planter.planter_name"></span>
+                            <span class="text-xs text-red-600 font-semibold"
+                                x-text="formatNumber(planter.total_cane, 2) + ' tons'"></span>
+                        </div>
+                    </template>
+                    <div x-show="riskPlanters.length === 0" class="text-center py-4 text-gray-400 text-sm">
+                        <i class="fas fa-check-circle text-green-400 text-2xl mb-1 block"></i>
+                        All planters performing well.
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Top Planters & Activities -->
         <div class="grid grid-cols-1 gap-6 lg:grid-cols-5">
             <!-- Top Planters - Takes 3 columns -->
@@ -361,246 +508,6 @@
 
     @push('scripts')
         <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-        <script>
-            function dashboardData() {
-                return {
-                    yearlyChart: null,
-                    weeklyChart: null,
-                    stats: {
-                        totalNetCane: 0,
-                        totalNetAmount: 0,
-                        activePlanters: 0,
-                        totalPlanters: 0,
-                        currentCropYear: '',
-                        currentWeek: 0,
-                        quedanPrice: 0,
-                        molassesPrice: 0,
-                        activeLoans: 0,
-                        quedanType: 'N/A',
-                        caneChange: 0
-                    },
-                    yearlyData: {
-                        labels: [],
-                        datasets: [{
-                            data: []
-                        }]
-                    },
-                    weeklyData: {
-                        labels: [],
-                        datasets: [{
-                            data: []
-                        }]
-                    },
-                    activities: [],
-                    topPlanters: [],
-                    recentPrices: [],
-
-                    init() {
-                        this.loadDashboardData();
-
-                        // Listen for filter changes from navigation
-                        window.addEventListener('filter-changed', (event) => {
-                            this.loadDashboardData(event.detail.cropYear, event.detail.week);
-                        });
-
-                        // Listen for refresh events
-                        window.addEventListener('refresh-dashboard', () => {
-                            this.loadDashboardData();
-                        });
-                    },
-
-                    async loadDashboardData(cropYear = null, week = null) {
-                        try {
-                            let url = '{{ route('dashboard.data') }}';
-                            let params = new URLSearchParams();
-
-                            if (cropYear) {
-                                params.append('crop_year', cropYear);
-                            }
-                            if (week) {
-                                params.append('week_no', week);
-                            }
-
-                            if (params.toString()) {
-                                url += '?' + params.toString();
-                            }
-
-                            const response = await fetch(url, {
-                                headers: {
-                                    'Accept': 'application/json',
-                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                                }
-                            });
-
-                            if (!response.ok) throw new Error('Failed to load');
-
-                            const data = await response.json();
-
-                            // Update all stats
-                            this.stats = data.stats;
-                            this.yearlyData = data.yearlyData;
-                            this.weeklyData = data.weeklyData;
-                            this.activities = data.activities;
-                            this.topPlanters = data.topPlanters;
-                            this.recentPrices = data.recentPrices;
-
-                            // Recreate charts with new data
-                            setTimeout(() => {
-                                this.createCharts();
-                            }, 300);
-
-                        } catch (error) {
-                            console.error('Error:', error);
-                        }
-                    },
-
-                    get sortedRecentPrices() {
-                        return [...this.recentPrices].sort((a, b) => {
-                            // Sort by date descending first
-                            const dateA = new Date(a.date);
-                            const dateB = new Date(b.date);
-                            if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) return 0;
-                            return dateB - dateA;
-                        });
-                    },
-
-                    get sortedRecentPrices() {
-                        return [...this.recentPrices].sort((a, b) => {
-                            // Sort by type first (Quedan before Molasses), then by latest
-                            if (a.type !== b.type) {
-                                return a.type === 'Quedan' ? -1 : 1;
-                            }
-                            // Extract numeric ID (remove prefix like 'q_' or 'm_')
-                            const idA = parseInt(String(a.id).replace(/\D/g, ''));
-                            const idB = parseInt(String(b.id).replace(/\D/g, ''));
-                            return idB - idA;
-                        });
-                    },
-
-                    createCharts() {
-                        const yCanvas = document.getElementById('yearlyChart');
-                        const wCanvas = document.getElementById('weeklyChart');
-
-                        if (!yCanvas || !wCanvas) {
-                            setTimeout(() => {
-                                this.createCharts();
-                            }, 100);
-                            return;
-                        }
-
-                        // Destroy existing charts
-                        if (this.yearlyChart) {
-                            this.yearlyChart.destroy();
-                            this.yearlyChart = null;
-                        }
-                        if (this.weeklyChart) {
-                            this.weeklyChart.destroy();
-                            this.weeklyChart = null;
-                        }
-
-                        // Yearly Chart
-                        const ctx1 = yCanvas.getContext('2d');
-                        const gradient1 = ctx1.createLinearGradient(0, 0, 0, 320);
-                        gradient1.addColorStop(0, 'rgba(34, 197, 94, 0.3)');
-                        gradient1.addColorStop(1, 'rgba(34, 197, 94, 0.02)');
-
-                        this.yearlyChart = new Chart(ctx1, {
-                            type: 'bar',
-                            data: {
-                                labels: this.yearlyData.labels,
-                                datasets: [{
-                                    label: 'Net Cane (tons)',
-                                    data: this.yearlyData.datasets[0].data,
-                                    backgroundColor: gradient1,
-                                    borderColor: '#22c55e',
-                                    borderWidth: 2,
-                                    borderRadius: 8,
-                                    borderSkipped: false
-                                }]
-                            },
-                            options: {
-                                responsive: true,
-                                maintainAspectRatio: false,
-                                plugins: {
-                                    legend: {
-                                        display: false
-                                    }
-                                },
-                                scales: {
-                                    y: {
-                                        beginAtZero: true,
-                                        grid: {
-                                            color: '#f3f4f6'
-                                        }
-                                    },
-                                    x: {
-                                        grid: {
-                                            display: false
-                                        }
-                                    }
-                                }
-                            }
-                        });
-
-                        // Weekly Chart
-                        const ctx2 = wCanvas.getContext('2d');
-                        const gradient2 = ctx2.createLinearGradient(0, 0, 0, 320);
-                        gradient2.addColorStop(0, 'rgba(59, 130, 246, 0.2)');
-                        gradient2.addColorStop(1, 'rgba(59, 130, 246, 0)');
-
-                        this.weeklyChart = new Chart(ctx2, {
-                            type: 'line',
-                            data: {
-                                labels: this.weeklyData.labels,
-                                datasets: [{
-                                    label: 'Net Cane (tons)',
-                                    data: this.weeklyData.datasets[0].data,
-                                    borderColor: '#3b82f6',
-                                    backgroundColor: gradient2,
-                                    borderWidth: 2.5,
-                                    tension: 0.4,
-                                    fill: true,
-                                    pointRadius: 5,
-                                    pointBackgroundColor: '#fff',
-                                    pointBorderColor: '#3b82f6',
-                                    pointBorderWidth: 2.5,
-                                    pointHoverRadius: 7
-                                }]
-                            },
-                            options: {
-                                responsive: true,
-                                maintainAspectRatio: false,
-                                plugins: {
-                                    legend: {
-                                        display: false
-                                    }
-                                },
-                                scales: {
-                                    y: {
-                                        beginAtZero: true,
-                                        grid: {
-                                            color: '#f3f4f6'
-                                        }
-                                    },
-                                    x: {
-                                        grid: {
-                                            display: false
-                                        }
-                                    }
-                                }
-                            }
-                        });
-                    },
-
-                    formatNumber(number, decimals = 2) {
-                        if (number === null || number === undefined) return '0';
-                        return parseFloat(number).toLocaleString('en-US', {
-                            minimumFractionDigits: decimals,
-                            maximumFractionDigits: decimals
-                        });
-                    }
-                }
-            }
-        </script>
+        <script src="{{ asset('js/dashboard.js') }}"></script>
     @endpush
 @endsection

@@ -12,8 +12,7 @@
 
                 <div class="flex items-center ml-2 lg:ml-0">
                     <span class="text-lg sm:text-xl font-bold text-primary-700 flex items-center">
-                        <i class="fas fa-seedling text-primary-600 mr-2"></i>
-                        KUSUG-PA
+                       Sugarcane Crop Management & Recording System Dashboard
                     </span>
                 </div>
             </div>

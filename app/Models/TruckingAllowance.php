@@ -8,4 +8,17 @@ use Illuminate\Database\Eloquent\Model;
 class TruckingAllowance extends Model
 {
     use HasFactory;
+
+    protected $table = 'trucking_allowance';
+
+    protected $fillable = [
+        'crop_year',
+        'week_no',
+        'planter_code',
+        'planter_name',
+        'net_cane',
+        'ta_amount',
+        'trans_code',
+        'user_id',
+    ];
 }

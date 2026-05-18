@@ -401,111 +401,112 @@
 
     @stack('scripts')
 
+
     <script>
         const swalCustomStyles = `
-        <style>
-        .swal2-popup {
-            border-radius: 16px !important;
-            padding: 2rem !important;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
-        }
-        .swal2-title {
-            font-size: 1.5rem !important;
-            font-weight: 700 !important;
-            color: #1f2937 !important;
-            margin-bottom: 1.5rem !important;
-        }
-        .swal2-input {
-            border: 2px solid #e5e7eb !important;
-            border-radius: 10px !important;
-            padding: 0.75rem 1rem !important;
-            font-size: 0.95rem !important;
-            transition: all 0.3s ease !important;
-            margin: 0.5rem 0 !important;
-            width: 100% !important;
-        }
-        .swal2-input:focus {
-            border-color: #16a34a !important;
-            box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.1) !important;
-            outline: none !important;
-        }
-        .swal2-select {
-            border: 2px solid #e5e7eb !important;
-            border-radius: 10px !important;
-            padding: 0.75rem 1rem !important;
-            font-size: 0.95rem !important;
-            transition: all 0.3s ease !important;
-            margin: 0.5rem 0 !important;
-            width: 100% !important;
-            background-color: white !important;
-        }
-        .swal2-select:focus {
-            border-color: #16a34a !important;
-            box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.1) !important;
-            outline: none !important;
-        }
-        .swal2-confirm {
-            background: linear-gradient(135deg, #16a34a 0%, #15803d 100%) !important;
-            border-radius: 10px !important;
-            padding: 0.75rem 2rem !important;
-            font-weight: 600 !important;
-            font-size: 0.95rem !important;
-            letter-spacing: 0.025em !important;
-            box-shadow: 0 4px 15px rgba(22, 163, 74, 0.3) !important;
-            transition: all 0.3s ease !important;
-        }
-        .swal2-confirm:hover {
-            transform: translateY(-1px) !important;
-            box-shadow: 0 6px 20px rgba(22, 163, 74, 0.4) !important;
-        }
-        .swal2-cancel {
-            border-radius: 10px !important;
-            padding: 0.75rem 2rem !important;
-            font-weight: 600 !important;
-            font-size: 0.95rem !important;
-            letter-spacing: 0.025em !important;
-            border: 2px solid #e5e7eb !important;
-            color: #6b7280 !important;
-            background-color: #f9fafb !important;
-            transition: all 0.3s ease !important;
-        }
-        .swal2-cancel:hover {
-            background-color: #e5e7eb !important;
-        }
-        .form-label {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-weight: 600;
-            color: #374151;
-            margin-bottom: 0.25rem;
-        }
-        .form-label i {
-            width: 20px;
-            color: #16a34a;
-            font-size: 0.9rem;
-        }
-        .input-group {
-            margin-bottom: 1rem;
-            text-align: left;
-        }
-        .input-icon-wrapper {
-            position: relative;
-        }
-        .input-icon-wrapper i {
-            position: absolute;
-            left: 1rem;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #9ca3af;
-            z-index: 1;
-        }
-        .input-icon-wrapper input,
-        .input-icon-wrapper select {
-            padding-left: 2.75rem !important;
-        }
-        </style>
-        `;
+    <style>
+    .swal2-popup {
+        border-radius: 16px !important;
+        padding: 2rem !important;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+    }
+    .swal2-title {
+        font-size: 1.5rem !important;
+        font-weight: 700 !important;
+        color: #1f2937 !important;
+        margin-bottom: 1.5rem !important;
+    }
+    .swal2-input {
+        border: 2px solid #e5e7eb !important;
+        border-radius: 10px !important;
+        padding: 0.75rem 1rem !important;
+        font-size: 0.95rem !important;
+        transition: all 0.3s ease !important;
+        margin: 0.5rem 0 !important;
+        width: 100% !important;
+    }
+    .swal2-input:focus {
+        border-color: #16a34a !important;
+        box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.1) !important;
+        outline: none !important;
+    }
+    .swal2-select {
+        border: 2px solid #e5e7eb !important;
+        border-radius: 10px !important;
+        padding: 0.75rem 1rem !important;
+        font-size: 0.95rem !important;
+        transition: all 0.3s ease !important;
+        margin: 0.5rem 0 !important;
+        width: 100% !important;
+        background-color: white !important;
+    }
+    .swal2-select:focus {
+        border-color: #16a34a !important;
+        box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.1) !important;
+        outline: none !important;
+    }
+    .swal2-confirm {
+        background: linear-gradient(135deg, #16a34a 0%, #15803d 100%) !important;
+        border-radius: 10px !important;
+        padding: 0.75rem 2rem !important;
+        font-weight: 600 !important;
+        font-size: 0.95rem !important;
+        letter-spacing: 0.025em !important;
+        box-shadow: 0 4px 15px rgba(22, 163, 74, 0.3) !important;
+        transition: all 0.3s ease !important;
+    }
+    .swal2-confirm:hover {
+        transform: translateY(-1px) !important;
+        box-shadow: 0 6px 20px rgba(22, 163, 74, 0.4) !important;
+    }
+    .swal2-cancel {
+        border-radius: 10px !important;
+        padding: 0.75rem 2rem !important;
+        font-weight: 600 !important;
+        font-size: 0.95rem !important;
+        letter-spacing: 0.025em !important;
+        border: 2px solid #e5e7eb !important;
+        color: #6b7280 !important;
+        background-color: #f9fafb !important;
+        transition: all 0.3s ease !important;
+    }
+    .swal2-cancel:hover {
+        background-color: #e5e7eb !important;
+    }
+    .form-label {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 0.25rem;
+    }
+    .form-label i {
+        width: 20px;
+        color: #16a34a;
+        font-size: 0.9rem;
+    }
+    .input-group {
+        margin-bottom: 1rem;
+        text-align: left;
+    }
+    .input-icon-wrapper {
+        position: relative;
+    }
+    .input-icon-wrapper i {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #9ca3af;
+        z-index: 1;
+    }
+    .input-icon-wrapper input,
+    .input-icon-wrapper select {
+        padding-left: 2.75rem !important;
+    }
+    </style>
+    `;
 
         function refreshDashboardData() {
             window.dispatchEvent(new CustomEvent('refresh-dashboard'));
@@ -564,12 +565,10 @@
                     const quedanPrice = document.getElementById('quedan_price').value;
                     const cropYear = document.getElementById('crop_year').value;
                     const weekNo = document.getElementById('week_no').value;
-
                     if (!quedanType || !quedanPrice || !cropYear || !weekNo) {
                         Swal.showValidationMessage('Please fill all fields');
                         return false;
                     }
-
                     return fetch('{{ url('/updates/add-quedan-price') }}', {
                             method: 'POST',
                             headers: {
@@ -650,12 +649,10 @@
                     const molPrice = document.getElementById('mol_price').value;
                     const cropYear = document.getElementById('crop_year').value;
                     const weekNo = document.getElementById('week_no').value;
-
                     if (!molPrice || !cropYear || !weekNo) {
                         Swal.showValidationMessage('Please fill all fields');
                         return false;
                     }
-
                     return fetch('{{ url('/updates/add-molasses-price') }}', {
                             method: 'POST',
                             headers: {
@@ -717,7 +714,6 @@
                         Swal.showValidationMessage('Please use format: YYYYMMDD (e.g., 20232024)');
                         return false;
                     }
-
                     return fetch('{{ url('/updates/add-crop-year') }}', {
                             method: 'POST',
                             headers: {
@@ -744,7 +740,6 @@
                             }
                         })
                         .catch(error => {
-                            console.error('Error:', error);
                             Swal.showValidationMessage('Failed to save. Please try again.');
                         });
                 }
@@ -756,56 +751,11 @@
                 title: 'Add Week Number',
                 html: swalCustomStyles + `
             <div style="padding: 0.5rem 0;">
-                <div class="input-group">
-                    <label class="form-label"><i class="fas fa-calendar-alt"></i> Crop Year</label>
-                    <div class="input-icon-wrapper">
-                        <i class="fas fa-calendar-alt"></i>
-                        <select id="crop_year" class="swal2-select">
-                            <option value="">Select crop year</option>
-                            @foreach (App\Models\CropYear::pluck('crop_year') as $year)
-                                <option value="{{ $year }}">{{ $year }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                </div>
-                
-                <div class="input-group">
-                    <label class="form-label"><i class="fas fa-hashtag"></i> Week Number</label>
-                    <div class="input-icon-wrapper">
-                        <i class="fas fa-hashtag"></i>
-                        <input type="number" id="week_no" class="swal2-input" placeholder="Enter week number (e.g., 1)" min="1" max="52">
-                    </div>
-                </div>
-                
-                <div class="input-group">
-                    <label class="form-label"><i class="fas fa-play-circle"></i> Week Start</label>
-                    <div class="grid grid-cols-2 gap-2">
-                        <div class="input-icon-wrapper">
-                            <i class="fas fa-calendar"></i>
-                            <input type="date" id="week_start_date" class="swal2-input" style="padding-left: 2.75rem;">
-                        </div>
-                        <div class="input-icon-wrapper">
-                            <i class="fas fa-clock"></i>
-                            <input type="time" id="week_start_time" class="swal2-input" value="00:00:00" step="1" style="padding-left: 2.75rem;">
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="input-group">
-                    <label class="form-label"><i class="fas fa-stop-circle"></i> Week End</label>
-                    <div class="grid grid-cols-2 gap-2">
-                        <div class="input-icon-wrapper">
-                            <i class="fas fa-calendar"></i>
-                            <input type="date" id="week_end_date" class="swal2-input" style="padding-left: 2.75rem;">
-                        </div>
-                        <div class="input-icon-wrapper">
-                            <i class="fas fa-clock"></i>
-                            <input type="time" id="week_end_time" class="swal2-input" value="23:59:59" step="1" style="padding-left: 2.75rem;">
-                        </div>
-                    </div>
-                </div>
-            </div>
-                `,
+                <div class="input-group"><label class="form-label"><i class="fas fa-calendar-alt"></i> Crop Year</label><div class="input-icon-wrapper"><i class="fas fa-calendar-alt"></i><select id="crop_year" class="swal2-select"><option value="">Select crop year</option>@foreach (App\Models\CropYear::pluck('crop_year') as $year)<option value="{{ $year }}">{{ $year }}</option>@endforeach</select></div></div>
+                <div class="input-group"><label class="form-label"><i class="fas fa-hashtag"></i> Week Number</label><div class="input-icon-wrapper"><i class="fas fa-hashtag"></i><input type="number" id="week_no" class="swal2-input" placeholder="Enter week number (e.g., 1)" min="1" max="52"></div></div>
+                <div class="input-group"><label class="form-label"><i class="fas fa-play-circle"></i> Week Start</label><div class="grid grid-cols-2 gap-2"><div class="input-icon-wrapper"><i class="fas fa-calendar"></i><input type="date" id="week_start_date" class="swal2-input" style="padding-left: 2.75rem;"></div><div class="input-icon-wrapper"><i class="fas fa-clock"></i><input type="time" id="week_start_time" class="swal2-input" value="00:00:00" step="1" style="padding-left: 2.75rem;"></div></div></div>
+                <div class="input-group"><label class="form-label"><i class="fas fa-stop-circle"></i> Week End</label><div class="grid grid-cols-2 gap-2"><div class="input-icon-wrapper"><i class="fas fa-calendar"></i><input type="date" id="week_end_date" class="swal2-input" style="padding-left: 2.75rem;"></div><div class="input-icon-wrapper"><i class="fas fa-clock"></i><input type="time" id="week_end_time" class="swal2-input" value="23:59:59" step="1" style="padding-left: 2.75rem;"></div></div></div>
+            </div>`,
                 showCancelButton: true,
                 confirmButtonText: '<i class="fas fa-save mr-2"></i> Save Week',
                 cancelButtonText: '<i class="fas fa-times mr-2"></i> Cancel',
@@ -816,20 +766,16 @@
                     const startTime = document.getElementById('week_start_time').value || '00:00:00';
                     const endDate = document.getElementById('week_end_date').value;
                     const endTime = document.getElementById('week_end_time').value || '23:59:59';
-
                     if (!cropYear || !weekNo || !startDate || !endDate) {
                         Swal.showValidationMessage('Please fill all fields');
                         return false;
                     }
-
                     const weekStart = startDate + ' ' + startTime;
                     const weekEnd = endDate + ' ' + endTime;
-
                     if (new Date(weekEnd) <= new Date(weekStart)) {
                         Swal.showValidationMessage('End date/time must be after start date/time');
                         return false;
                     }
-
                     return fetch('{{ url('/updates/add-week-number') }}', {
                             method: 'POST',
                             headers: {
@@ -865,71 +811,128 @@
             });
         }
 
-        // Helper function to generate 24-hour time options
-        function generate24HourOptions(defaultValue = '00:00') {
-            let options = '';
-            for (let hour = 0; hour < 24; hour++) {
-                for (let minute = 0; minute < 60; minute += 30) {
-                    const hourStr = String(hour).padStart(2, '0');
-                    const minuteStr = String(minute).padStart(2, '0');
-                    const timeValue = `${hourStr}:${minuteStr}`;
-                    const selected = timeValue === defaultValue ? 'selected' : '';
-                    options += `<option value="${timeValue}" ${selected}>${timeValue}</option>`;
-                }
+        // Handle file selection
+        function handleFileSelect(input) {
+            const file = input.files[0];
+            if (file) {
+                document.getElementById('selectedFileName').textContent = file.name;
+                document.getElementById('fileInfo2').style.display = 'block';
             }
-            return options;
         }
 
         function openUploadModal(type) {
             const titles = {
-                'summary': 'Upload Summary CSV',
-                'trucking': 'Upload Trucking Allowance CSV',
-                'fci': 'Upload Fresh Cane Incentive CSV',
-                'fuel': 'Upload Fuel CSV',
-                'rentals': 'Upload Rentals CSV',
-                'underload': 'Upload Underload CSV',
-                'transloading': 'Upload Transloading CSV'
+                'summary': '📊 Upload Summary CSV',
+                'trucking': '🚛 Upload Trucking Allowance CSV',
+                'fci': '🌿 Upload Fresh Cane Incentive CSV',
+                'fuel': '⛽ Upload Fuel CSV',
+                'rentals': '🏗️ Upload Rentals CSV',
+                'underload': '📉 Upload Underload CSV',
+                'transloading': '🔄 Upload Transloading CSV',
+                'mudpress': '🏭 Upload Mudpress CSV',
+                'consolidated': '📦 Upload Consolidated Summary CSV',
+                'quedan': '📋 Upload Quedan CSV',
+                'molasses': '🧪 Upload Molasses CSV',
+            };
+            const descriptions = {
+                'summary': 'Columns: crop_year, week_no, planter_code, planter_name, net_cane, net_amount',
+                'trucking': 'Columns: crop_year, week_no, planter_code, planter_name, net_cane, ta_amount, trans_code',
+                'fci': 'Upload fresh cane incentive data',
+                'fuel': 'Upload fuel consumption records',
+                'rentals': 'Upload rental equipment records',
+                'underload': 'Upload underload delivery data',
+                'transloading': 'Upload transloading records',
+                'mudpress': 'Columns: crop_year, week_no, planter_code, planter_name, trans_code, charge_code, mpress',
+                'consolidated': 'Columns: planter_code, assn_code, planter_name, assn_name, ta_wt, ta_amount, emi_wt, emi_amount, pat_wt, pat_amount, cci_fa_wt, cci_fa_amt, cci_fb_wt, cci_fb_amt, cci_fc_wt, cci_fc_amt, fuel_issuance_amt, rental_amt, underload_amt, mudpress_amt, adj_amt',
+                'quedan': 'Columns: crop_year, week_no, planter_code, planter_name, qdn_no, tin_no, total_liens, sugar_lkg, labor_lkg',
+                'molasses': 'Columns: crop_year, week_no, planter_code, planter_name, tin_no, mc_no, mol_net',
             };
 
             Swal.fire({
                 title: titles[type] || 'Upload CSV',
                 html: swalCustomStyles + `
             <div style="padding: 0.5rem 0;">
-                <form id="uploadForm" method="POST" action="/upload/${type}" enctype="multipart/form-data">
-                    <input type="hidden" name="_token" value="${document.querySelector('meta[name="csrf-token"]').content}">
-                    <div style="border: 2px dashed #d1d5db; border-radius: 12px; padding: 2rem; text-align: center; background: #f9fafb;">
-                        <i class="fas fa-file-csv" style="font-size: 2rem; color: #16a34a; margin-bottom: 0.75rem;"></i>
-                        <p style="font-weight: 600; color: #374151; margin-bottom: 0.5rem;">Choose CSV File</p>
-                        <label style="cursor: pointer; display: inline-block; padding: 0.5rem 1.5rem; background: white; border: 2px solid #16a34a; border-radius: 8px; color: #16a34a; font-weight: 600;">
-                            <i class="fas fa-folder-open mr-2"></i> Browse Files
-                            <input type="file" name="file" accept=".csv,.txt" style="display: none;" onchange="document.getElementById('fileName').textContent = this.files[0]?.name || 'No file selected'; document.getElementById('fileInfo').style.display = 'block';">
-                        </label>
-                        <div id="fileInfo" style="display: none; margin-top: 1rem; padding: 0.75rem; background: white; border-radius: 8px;">
-                            <p id="fileName" style="font-weight: 600; color: #374151;"></p>
+                <div style="text-align: center; margin-bottom: 1.5rem;">
+                    <div style="width: 64px; height: 64px; background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); border-radius: 16px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+                        <i class="fas fa-cloud-upload-alt" style="font-size: 1.5rem; color: white;"></i>
+                    </div>
+                    <p style="color: #6b7280; font-size: 0.9rem; margin-top: 0.5rem;">${descriptions[type] || 'Upload CSV data file'}</p>
+                </div>
+                <div style="border: 2px dashed #d1d5db; border-radius: 12px; padding: 2rem; text-align: center; background: #f9fafb; transition: all 0.3s ease;" id="dropZone" onmouseover="this.style.borderColor='#16a34a'; this.style.background='#f0fdf4';" onmouseout="this.style.borderColor='#d1d5db'; this.style.background='#f9fafb';">
+                    <i class="fas fa-file-csv" style="font-size: 2rem; color: #16a34a; margin-bottom: 0.75rem;"></i>
+                    <p style="font-weight: 600; color: #374151; margin-bottom: 0.5rem;">Choose CSV File</p>
+                    <p style="font-size: 0.8rem; color: #9ca3af; margin-bottom: 1rem;">Drag and drop or click to browse</p>
+                    <label style="cursor: pointer; display: inline-block; padding: 0.5rem 1.5rem; background: white; border: 2px solid #16a34a; border-radius: 8px; color: #16a34a; font-weight: 600; font-size: 0.9rem; transition: all 0.3s ease;" onmouseover="this.style.background='#16a34a'; this.style.color='white';" onmouseout="this.style.background='white'; this.style.color='#16a34a';">
+                        <i class="fas fa-folder-open mr-2"></i> Browse Files
+                        <input type="file" id="csvFileInput" accept=".csv,.txt" style="display: none;" onchange="handleFileSelect(this)">
+                    </label>
+                    <div id="fileInfo2" style="display: none; margin-top: 1rem; padding: 0.75rem; background: white; border-radius: 8px;">
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <i class="fas fa-file-csv" style="color: #16a34a; font-size: 1.25rem;"></i>
+                            <div style="text-align: left; flex: 1;">
+                                <p id="selectedFileName" style="font-weight: 600; color: #374151; font-size: 0.9rem;"></p>
+                                <p style="color: #9ca3af; font-size: 0.8rem;">Ready to upload</p>
+                            </div>
+                            <i class="fas fa-check-circle" style="color: #16a34a;"></i>
                         </div>
                     </div>
-                    <p style="font-size: 0.75rem; color: #9ca3af; margin-top: 0.75rem; text-align: center;">Accepted: .csv, .txt | Max size: 5MB</p>
-                </form>
-            </div>
-        `,
+                </div>
+                <p style="font-size: 0.75rem; color: #9ca3af; margin-top: 0.75rem; text-align: center;"><i class="fas fa-info-circle mr-1"></i>Accepted: .csv, .txt | Max size: 5MB</p>
+            </div>`,
                 showCancelButton: true,
                 confirmButtonText: '<i class="fas fa-cloud-upload-alt mr-2"></i> Upload',
                 cancelButtonText: '<i class="fas fa-times mr-2"></i> Cancel',
                 confirmButtonColor: '#16a34a',
+                customClass: {
+                    popup: 'swal2-popup-modern'
+                },
                 preConfirm: () => {
-                    const form = document.getElementById('uploadForm');
-                    const fileInput = form.querySelector('input[type="file"]');
-                    if (!fileInput.files.length) {
+                    const fileInput = document.getElementById('csvFileInput');
+                    if (!fileInput || !fileInput.files.length) {
                         Swal.showValidationMessage('Please select a file to upload');
                         return false;
                     }
-                    if (fileInput.files[0].size > 5242880) {
+                    const file = fileInput.files[0];
+                    if (file.size > 5242880) {
                         Swal.showValidationMessage('File size must be less than 5MB');
                         return false;
                     }
-                    Swal.showLoading();
-                    form.submit();
-                    return false;
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    formData.append('_token', document.querySelector('meta[name="csrf-token"]').content);
+                    return fetch('/upload/' + type, {
+                            method: 'POST',
+                            headers: {
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                            },
+                            body: formData
+                        })
+                        .then(response => {
+                            if (response.redirected) {
+                                window.location.reload();
+                                return;
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            if (data && data.error) {
+                                Swal.showValidationMessage(data.error);
+                                return false;
+                            }
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Upload Complete!',
+                                text: data?.message || 'File uploaded successfully.',
+                                timer: 2500,
+                                showConfirmButton: false
+                            }).then(() => {
+                                window.location.reload();
+                            });
+                        })
+                        .catch(error => {
+                            Swal.showValidationMessage('Upload failed. Please try again.');
+                        });
                 }
             });
         }
