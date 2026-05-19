@@ -50,6 +50,9 @@ class UploadController extends Controller
             }
         }
 
+         $cropYear = $request->input('crop_year');  // FIX: use $request->input()
+        $weekNo = $request->input('week_no');      // FIX: use $request->input()
+
         $request->validate([
             'file' => 'required|mimes:csv,txt|max:5120',
         ]);
@@ -96,16 +99,19 @@ class UploadController extends Controller
                 $method = 'process' . ucfirst($type) . 'Line';
                 
                 if (method_exists($this, $method)) {
-                    $processed = $this->$method($line, $index, $userId);
-                    
-                    if ($processed['success']) {
-                        $batchData[] = $processed['data'];
-                    } else {
-                        $errors[] = $processed['error'];
-                        Log::warning('CSV line error', ['line' => $index, 'error' => $processed['error']]);
-                    }
+                $processed = $this->$method($line, $index, $userId);
+                
+                if ($processed['success']) {
+                    // FIX: Use the variables from the request
+                    $processed['data']['crop_year'] = $cropYear;
+                    $processed['data']['week_no'] = $weekNo;
+                    $batchData[] = $processed['data'];
+                } else {
+                    $errors[] = $processed['error'];
+                    Log::warning('CSV line error', ['line' => $index, 'error' => $processed['error']]);
                 }
             }
+        }
             
             Log::info('CSV Processing complete', [
                 'records_to_insert' => count($batchData),
@@ -387,6 +393,8 @@ class UploadController extends Controller
     return [
         'success' => true,
         'data' => [
+            'crop_year' => request()->get('crop_year'), 
+            'week_no' => request()->get('week_no'),    
             'planter_code' => trim($line[0]),
             'assn_code' => trim($line[1]),
             'planter_name' => $planterName,

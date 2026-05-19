@@ -55,6 +55,22 @@ class UpdatesController extends Controller
         return response()->json(['message' => 'Week Number added successfully']);
     }
 
+    public function getWeeksByCropYear(Request $request)
+{
+    $cropYear = $request->get('crop_year');
+    
+    if (!$cropYear) {
+        return response()->json(['weeks' => []]);
+    }
+    
+    $weeks = WeekNo::where('crop_year', $cropYear)
+        ->select('week_no')
+        ->orderBy('week_no')
+        ->get();
+    
+    return response()->json(['weeks' => $weeks]);
+}
+
     public function addQuedanPrice(Request $request)
     {
         $data = $request->validate([

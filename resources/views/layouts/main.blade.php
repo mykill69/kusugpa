@@ -848,6 +848,11 @@
                 'molasses': 'Columns: crop_year, week_no, planter_code, planter_name, tin_no, mc_no, mol_net',
             };
 
+            // Types that need crop_year and week_no selection
+            const needsCropWeek = ['summary', 'trucking', 'fci', 'fuel', 'rentals', 'underload', 'transloading', 'mudpress',
+                'quedan', 'molasses', 'consolidated'
+            ];
+
             Swal.fire({
                 title: titles[type] || 'Upload CSV',
                 html: swalCustomStyles + `
@@ -858,13 +863,45 @@
                     </div>
                     <p style="color: #6b7280; font-size: 0.9rem; margin-top: 0.5rem;">${descriptions[type] || 'Upload CSV data file'}</p>
                 </div>
-                <div style="border: 2px dashed #d1d5db; border-radius: 12px; padding: 2rem; text-align: center; background: #f9fafb; transition: all 0.3s ease;" id="dropZone" onmouseover="this.style.borderColor='#16a34a'; this.style.background='#f0fdf4';" onmouseout="this.style.borderColor='#d1d5db'; this.style.background='#f9fafb';">
+                
+                ${needsCropWeek.includes(type) ? `
+                        <!-- Crop Year & Week Selection -->
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+                            <div>
+                                <label style="display: block; font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 4px; text-align: left;">
+                                    <i class="fas fa-calendar-alt" style="color: #16a34a; margin-right: 4px;"></i> Crop Year *
+                                </label>
+                                <select id="uploadCropYear" onchange="onUploadCropYearChange(this)" 
+                                    style="width: 100%; padding: 8px 12px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 14px; background: white;">
+                                    <option value="">Select Crop Year</option>
+                                    @foreach (App\Models\CropYear::orderBy('crop_year', 'desc')->pluck('crop_year') as $cy)
+                                        <option value="{{ $cy }}">{{ $cy }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div>
+                                <label style="display: block; font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 4px; text-align: left;">
+                                    <i class="fas fa-calendar-week" style="color: #16a34a; margin-right: 4px;"></i> Week No *
+                                </label>
+                                <select id="uploadWeekNo" onchange="checkUploadReady()" disabled
+                                    style="width: 100%; padding: 8px 12px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 14px; background: white; opacity: 0.6;">
+                                    <option value="">Select Week</option>
+                                </select>
+                            </div>
+                        </div>
+                        ` : ''}
+
+                <div style="border: 2px dashed #d1d5db; border-radius: 12px; padding: 2rem; text-align: center; background: #f9fafb; transition: all 0.3s ease;" 
+                    id="dropZone" onmouseover="this.style.borderColor='#16a34a'; this.style.background='#f0fdf4';" 
+                    onmouseout="this.style.borderColor='#d1d5db'; this.style.background='#f9fafb';">
                     <i class="fas fa-file-csv" style="font-size: 2rem; color: #16a34a; margin-bottom: 0.75rem;"></i>
                     <p style="font-weight: 600; color: #374151; margin-bottom: 0.5rem;">Choose CSV File</p>
                     <p style="font-size: 0.8rem; color: #9ca3af; margin-bottom: 1rem;">Drag and drop or click to browse</p>
-                    <label style="cursor: pointer; display: inline-block; padding: 0.5rem 1.5rem; background: white; border: 2px solid #16a34a; border-radius: 8px; color: #16a34a; font-weight: 600; font-size: 0.9rem; transition: all 0.3s ease;" onmouseover="this.style.background='#16a34a'; this.style.color='white';" onmouseout="this.style.background='white'; this.style.color='#16a34a';">
+                    <label id="browseLabel" style="cursor: pointer; display: inline-block; padding: 0.5rem 1.5rem; background: white; border: 2px solid #16a34a; border-radius: 8px; color: #16a34a; font-weight: 600; font-size: 0.9rem; transition: all 0.3s ease;"
+                        onmouseover="this.style.background='#16a34a'; this.style.color='white';" 
+                        onmouseout="this.style.background='white'; this.style.color='#16a34a';">
                         <i class="fas fa-folder-open mr-2"></i> Browse Files
-                        <input type="file" id="csvFileInput" accept=".csv,.txt" style="display: none;" onchange="handleFileSelect(this)">
+                        <input type="file" id="csvFileInput" accept=".csv,.txt" style="display: none;" onchange="handleFileSelect(this); checkUploadReady();">
                     </label>
                     <div id="fileInfo2" style="display: none; margin-top: 1rem; padding: 0.75rem; background: white; border-radius: 8px;">
                         <div style="display: flex; align-items: center; gap: 0.75rem;">
@@ -877,7 +914,12 @@
                         </div>
                     </div>
                 </div>
-                <p style="font-size: 0.75rem; color: #9ca3af; margin-top: 0.75rem; text-align: center;"><i class="fas fa-info-circle mr-1"></i>Accepted: .csv, .txt | Max size: 5MB</p>
+                <p style="font-size: 0.75rem; color: #9ca3af; margin-top: 0.75rem; text-align: center;">
+                    <i class="fas fa-info-circle mr-1"></i>Accepted: .csv, .txt | Max size: 5MB
+                </p>
+                <p id="uploadHint" style="font-size: 0.75rem; color: #f59e0b; margin-top: 0.5rem; text-align: center; display: ${needsCropWeek.includes(type) ? 'block' : 'none'};">
+                    <i class="fas fa-exclamation-circle mr-1"></i>Please select Crop Year and Week No before uploading
+                </p>
             </div>`,
                 showCancelButton: true,
                 confirmButtonText: '<i class="fas fa-cloud-upload-alt mr-2"></i> Upload',
@@ -885,6 +927,17 @@
                 confirmButtonColor: '#16a34a',
                 customClass: {
                     popup: 'swal2-popup-modern'
+                },
+                didOpen: () => {
+                    // Initially disable upload button for types that need crop/week
+                    if (needsCropWeek.includes(type)) {
+                        const confirmBtn = Swal.getConfirmButton();
+                        if (confirmBtn) {
+                            confirmBtn.disabled = true;
+                            confirmBtn.style.opacity = '0.5';
+                            confirmBtn.style.cursor = 'not-allowed';
+                        }
+                    }
                 },
                 preConfirm: () => {
                     const fileInput = document.getElementById('csvFileInput');
@@ -897,9 +950,23 @@
                         Swal.showValidationMessage('File size must be less than 5MB');
                         return false;
                     }
+
                     const formData = new FormData();
                     formData.append('file', file);
                     formData.append('_token', document.querySelector('meta[name="csrf-token"]').content);
+
+                    // Append crop year and week if available
+                    if (needsCropWeek.includes(type)) {
+                        const cropYear = document.getElementById('uploadCropYear')?.value;
+                        const weekNo = document.getElementById('uploadWeekNo')?.value;
+                        if (!cropYear || !weekNo) {
+                            Swal.showValidationMessage('Please select Crop Year and Week No');
+                            return false;
+                        }
+                        formData.append('crop_year', cropYear);
+                        formData.append('week_no', weekNo);
+                    }
+
                     return fetch('/upload/' + type, {
                             method: 'POST',
                             headers: {
@@ -935,6 +1002,80 @@
                         });
                 }
             });
+        }
+
+        // Handle crop year change - load weeks
+        function onUploadCropYearChange(select) {
+            const cropYear = select.value;
+            const weekSelect = document.getElementById('uploadWeekNo');
+
+            if (!cropYear) {
+                weekSelect.innerHTML = '<option value="">Select Week</option>';
+                weekSelect.disabled = true;
+                weekSelect.style.opacity = '0.6';
+                checkUploadReady();
+                return;
+            }
+
+            weekSelect.innerHTML = '<option value="">Loading weeks...</option>';
+            weekSelect.disabled = true;
+
+            // Fetch weeks from week_no table for the selected crop year
+            fetch(`/get-weeks-by-crop-year?crop_year=${encodeURIComponent(cropYear)}`, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    }
+                })
+                .then(r => r.json())
+                .then(data => {
+                    const weeks = data.weeks || [];
+                    weekSelect.innerHTML = '<option value="">Select Week</option>';
+                    if (weeks.length === 0) {
+                        weekSelect.innerHTML += '<option value="" disabled>No weeks found for this crop year</option>';
+                    } else {
+                        weeks.forEach(w => {
+                            weekSelect.innerHTML +=
+                                `<option value="${w.week_no}">Week ${w.week_no}</option>`;
+                        });
+                    }
+                    weekSelect.disabled = false;
+                    weekSelect.style.opacity = '1';
+                    checkUploadReady();
+                })
+                .catch(() => {
+                    weekSelect.innerHTML = '<option value="">Error loading weeks</option>';
+                });
+        }
+
+        // Check if all required fields are filled
+        function checkUploadReady() {
+            const fileInput = document.getElementById('csvFileInput');
+            const cropYearSelect = document.getElementById('uploadCropYear');
+            const weekSelect = document.getElementById('uploadWeekNo');
+            const hint = document.getElementById('uploadHint');
+
+            const hasFile = fileInput && fileInput.files.length > 0;
+            const needsCropWeek = cropYearSelect !== null;
+
+            let ready = hasFile;
+
+            if (needsCropWeek) {
+                const hasCropYear = cropYearSelect && cropYearSelect.value;
+                const hasWeek = weekSelect && weekSelect.value && !weekSelect.disabled;
+                ready = hasFile && hasCropYear && hasWeek;
+
+                if (hint) {
+                    hint.style.display = ready ? 'none' : 'block';
+                }
+            }
+
+            const confirmBtn = Swal.getConfirmButton();
+            if (confirmBtn) {
+                confirmBtn.disabled = !ready;
+                confirmBtn.style.opacity = ready ? '1' : '0.5';
+                confirmBtn.style.cursor = ready ? 'pointer' : 'not-allowed';
+            }
         }
 
         function openSummaryUpload() {

@@ -106,6 +106,9 @@ Route::middleware(['login_auth'])->group(function () {
     ->where('type', 'summary|trucking|fuel|rentals|underload|transloading|fci|mudpress|consolidated')
     ->name('upload.csv');
 
+   
+    Route::get('/get-weeks-by-crop-year', [UpdatesController::class, 'getWeeksByCropYear'])->name('weeks.by-crop-year');
+
     // Dashboard API endpoints
     Route::get('/dashboard/data', [MenuController::class, 'dashboardData'])->name('dashboard.data');
     Route::get('/dashboard/weekly', [MenuController::class, 'dashboardWeekly'])->name('dashboard.weekly');
