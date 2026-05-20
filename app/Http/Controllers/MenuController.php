@@ -7,6 +7,9 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\CropYear;
 use App\Models\WeekNo;
 use App\Models\Summary;
+use App\Models\ConsolidatedUpload;
+use App\Models\Quedan;
+use App\Models\Molass;
 use App\Models\QuedanPrice;
 use App\Models\MolassesPrice;
 use App\Models\User;
@@ -249,69 +252,275 @@ class MenuController extends Controller
     }
 
     public function printVoucher(Request $request)
-    {
-        AuditLog::log('view', 'voucher', 'Viewed print voucher page');
-        
-        $cropYear = CropYear::pluck('crop_year');
-        $weekNos = WeekNo::pluck('week_no')->sort();
-        $selectedCropYear = $request->input('crop_year');
-        $weekFrom = $request->input('week_from');
-        $weekTo = $request->input('week_to');
-        $selectedPlanters = $request->input('planter_name');
+{
+    AuditLog::log('view', 'voucher', 'Viewed print voucher page');
+    
+    $cropYear = CropYear::pluck('crop_year');
+    
+    // Get week numbers from week_no table
+    $weekNos = WeekNo::select('week_no')
+        ->distinct()
+        ->orderBy('week_no')
+        ->pluck('week_no');
+    
+    $selectedCropYear = $request->input('crop_year');
+    $weekFrom = $request->input('week_from');
+    $weekTo = $request->input('week_to');
+    $selectedPlanters = $request->input('planter_name');
 
-        $planterNames = Summary::select('planter_name')->distinct()->pluck('planter_name');
+    // Get planter names from quedans table
+    $planterNames = Quedan::select('planter_name')
+        ->distinct()
+        ->orderBy('planter_name')
+        ->pluck('planter_name');
 
-        return view('menu.printVoucher', compact(
-            'cropYear', 'weekNos', 'selectedCropYear', 'weekFrom', 'weekTo',
-            'planterNames', 'selectedPlanters'
-        ));
+    return view('menu.printVoucher', compact(
+        'cropYear', 'weekNos', 'selectedCropYear', 'weekFrom', 'weekTo',
+        'planterNames', 'selectedPlanters'
+    ));
+}
+
+public function voucherPDF(Request $request)
+{
+    $cropYear = $request->input('crop_year');
+    $weekFrom = $request->input('week_from');
+    $weekTo = $request->input('week_to');
+    $planterNames = $request->input('planter_name');
+
+    AuditLog::log('print', 'voucher', 'Generated voucher PDF from quedan and molasses data', [
+        'crop_year' => $cropYear,
+        'weeks' => $weekFrom . ' - ' . $weekTo,
+        'planters' => $planterNames ? count((array)$planterNames) : 'all'
+    ]);
+
+    // Get week end dates
+    $weekEndDates = WeekNo::where('crop_year', $cropYear)
+        ->whereBetween('week_no', [$weekFrom, $weekTo])
+        ->pluck('week_end_date', 'week_no');
+
+    // Query quedans with their prices
+    $quedanQuery = Quedan::where('quedans.crop_year', $cropYear)
+        ->whereBetween('quedans.week_no', [$weekFrom, $weekTo]);
+
+    if (!empty($planterNames)) {
+        $quedanQuery->whereIn('quedans.planter_name', (array) $planterNames);
     }
 
-    public function voucherPDF(Request $request)
-    {
-        $cropYear = $request->input('crop_year');
-        $weekFrom = $request->input('week_from');
-        $weekTo = $request->input('week_to');
-        $planterNames = $request->input('planter_name');
+    $quedans = $quedanQuery
+        ->leftJoin('quedan_price', function($join) {
+            $join->on('quedans.crop_year', '=', 'quedan_price.crop_year')
+                 ->on('quedans.week_no', '=', 'quedan_price.week_no');
+        })
+        ->select(
+            'quedans.*',
+            'quedan_price.quedan_type',
+            'quedan_price.quedan_price'
+        )
+        ->get();
 
-        AuditLog::log('print', 'voucher', 'Generated voucher PDF', [
-            'crop_year' => $cropYear,
-            'weeks' => $weekFrom . ' - ' . $weekTo,
-            'planters' => $planterNames ? count((array)$planterNames) : 'all'
-        ]);
+    // Query molasses with their prices
+    $molassesQuery = Molass::where('molasses.crop_year', $cropYear)
+        ->whereBetween('molasses.week_no', [$weekFrom, $weekTo]);
 
-        $query = Summary::where('summary.crop_year', $cropYear)
-            ->whereBetween('summary.week_no', [$weekFrom, $weekTo]);
+    if (!empty($planterNames)) {
+        $molassesQuery->whereIn('molasses.planter_name', (array) $planterNames);
+    }
 
-        if (!empty($planterNames)) {
-            $query->whereIn('summary.planter_name', (array) $planterNames);
+    $molasses = $molassesQuery
+        ->leftJoin('mol_price', function($join) {
+            $join->on('molasses.crop_year', '=', 'mol_price.crop_year')
+                 ->on('molasses.week_no', '=', 'mol_price.week_no');
+        })
+        ->select(
+            'molasses.*',
+            'mol_price.mol_price'
+        )
+        ->get();
+
+    // Query consolidated uploads
+    $consolidatedQuery = ConsolidatedUpload::where('crop_year', $cropYear)
+        ->whereBetween('week_no', [$weekFrom, $weekTo]);
+
+    if (!empty($planterNames)) {
+        $consolidatedQuery->whereIn('planter_name', (array) $planterNames);
+    }
+
+    $consolidatedUploads = $consolidatedQuery->get();
+
+    // Group and summarize data by planter
+    $summaryData = [];
+    
+    // Process quedans
+    foreach ($quedans as $quedan) {
+        $key = $quedan->planter_code;
+        
+        if (!isset($summaryData[$key])) {
+            $summaryData[$key] = [
+                'planter_code' => $quedan->planter_code,
+                'planter_name' => $quedan->planter_name,
+                'tin_no' => $quedan->tin_no,
+                'week_no' => $weekFrom . ' - ' . $weekTo,
+                'week_end_date' => $weekEndDates[$weekTo] ?? '',
+                // Quedan Type A
+                'quedan_a_lkg' => 0,
+                'quedan_a_price' => 0,
+                // Quedan Type B
+                'quedan_b_lkg' => 0,
+                'quedan_b_price' => 0,
+                'quedan_b_liens' => 0,
+                'quedan_b_service_charge' => 0,
+                'quedan_b_insurance' => 0,
+                'quedan_b_tax' => 0,
+                // Quedan Type D
+                'quedan_d_lkg' => 0,
+                'quedan_d_price' => 0,
+                'quedan_d_liens' => 0,
+                'quedan_d_service_charge' => 0,
+                'quedan_d_insurance' => 0,
+                'quedan_d_tax' => 0,
+                // Molasses
+                'mol_net' => 0,
+                'mol_price' => 0,
+                'molasses_liens' => 0,
+                'molasses_service_charge' => 0,
+                'molasses_insurance' => 0,
+                'molasses_tax' => 0,
+                // Consolidated Upload
+                'consolidated_total' => 0,
+                'consolidated_ta_wt' => 0,
+            ];
         }
-
-        $summaryData = $query->leftJoin('quedan_price', function ($join) {
-                $join->on('summary.crop_year', '=', 'quedan_price.crop_year')
-                    ->on('summary.week_no', '=', 'quedan_price.week_no');
-            })
-            ->select('summary.*', 'quedan_price.quedan_price as qp')
-            ->get();
-
-        $autoDeduct = LoanSetting::get('auto_deduct', true);
+        
+        // Aggregate quedan data by type
+        switch ($quedan->quedan_type) {
+            case 'A':
+                $summaryData[$key]['quedan_a_lkg'] += $quedan->sugar_lkg;
+                $summaryData[$key]['quedan_a_price'] = $quedan->quedan_price;
+                break;
+            case 'B':
+                $summaryData[$key]['quedan_b_lkg'] += $quedan->sugar_lkg;
+                $summaryData[$key]['quedan_b_price'] = $quedan->quedan_price;
+                $summaryData[$key]['quedan_b_liens'] += $quedan->total_liens;
+                break;
+            case 'D':
+                $summaryData[$key]['quedan_d_lkg'] += $quedan->sugar_lkg;
+                $summaryData[$key]['quedan_d_price'] = $quedan->quedan_price;
+                $summaryData[$key]['quedan_d_liens'] += $quedan->total_liens;
+                break;
+        }
+    }
+    
+    // Process molasses
+    foreach ($molasses as $mol) {
+        $key = $mol->planter_code;
+        
+        if (!isset($summaryData[$key])) {
+            $summaryData[$key] = [
+                'planter_code' => $mol->planter_code,
+                'planter_name' => $mol->planter_name,
+                'tin_no' => $mol->tin_no,
+                'week_no' => $weekFrom . ' - ' . $weekTo,
+                'week_end_date' => $weekEndDates[$weekTo] ?? '',
+                // Quedan Type A
+                'quedan_a_lkg' => 0,
+                'quedan_a_price' => 0,
+                // Quedan Type B
+                'quedan_b_lkg' => 0,
+                'quedan_b_price' => 0,
+                'quedan_b_liens' => 0,
+                'quedan_b_service_charge' => 0,
+                'quedan_b_insurance' => 0,
+                'quedan_b_tax' => 0,
+                // Quedan Type D
+                'quedan_d_lkg' => 0,
+                'quedan_d_price' => 0,
+                'quedan_d_liens' => 0,
+                'quedan_d_service_charge' => 0,
+                'quedan_d_insurance' => 0,
+                'quedan_d_tax' => 0,
+                // Molasses
+                'mol_net' => 0,
+                'mol_price' => 0,
+                'molasses_liens' => 0,
+                'molasses_service_charge' => 0,
+                'molasses_insurance' => 0,
+                'molasses_tax' => 0,
+                // Consolidated Upload
+                'consolidated_total' => 0,
+                'consolidated_ta_wt' => 0,
+            ];
+        }
+        
+        $summaryData[$key]['mol_net'] += $mol->mol_net;
+        $summaryData[$key]['mol_price'] = $mol->mol_price;
+    }
+    
+    // Process consolidated uploads
+    foreach ($consolidatedUploads as $consolidated) {
+        $key = $consolidated->planter_code;
+        
+        if (!isset($summaryData[$key])) {
+            $summaryData[$key] = [
+                'planter_code' => $consolidated->planter_code,
+                'planter_name' => $consolidated->planter_name,
+                'tin_no' => '',
+                'week_no' => $weekFrom . ' - ' . $weekTo,
+                'week_end_date' => $weekEndDates[$weekTo] ?? '',
+                // Quedan Type A
+                'quedan_a_lkg' => 0,
+                'quedan_a_price' => 0,
+                // Quedan Type B
+                'quedan_b_lkg' => 0,
+                'quedan_b_price' => 0,
+                'quedan_b_liens' => 0,
+                'quedan_b_service_charge' => 0,
+                'quedan_b_insurance' => 0,
+                'quedan_b_tax' => 0,
+                // Quedan Type D
+                'quedan_d_lkg' => 0,
+                'quedan_d_price' => 0,
+                'quedan_d_liens' => 0,
+                'quedan_d_service_charge' => 0,
+                'quedan_d_insurance' => 0,
+                'quedan_d_tax' => 0,
+                // Molasses
+                'mol_net' => 0,
+                'mol_price' => 0,
+                'molasses_liens' => 0,
+                'molasses_service_charge' => 0,
+                'molasses_insurance' => 0,
+                'molasses_tax' => 0,
+                // Consolidated Upload
+                'consolidated_total' => 0,
+                'consolidated_ta_wt' => 0,
+            ];
+        }
+        
+        $summaryData[$key]['consolidated_ta_wt'] += $consolidated->ta_wt;
+        $summaryData[$key]['consolidated_total'] += $consolidated->total_summary;
+    }
+    
+    // Convert to collection
+    $summaryData = collect(array_values($summaryData));
+    
+    $autoDeduct = LoanSetting::get('auto_deduct', true);
+    if ($autoDeduct) {
         $loanController = new LoanController();
-        
-        foreach ($summaryData as $summary) {
-            $summary->loan_deduction = 0;
-            $summary->net_proceeds = $summary->net_amount;
-            
-            if ($autoDeduct) {
-                $deduction = $loanController->getActiveDeductions(
-                    $summary->planter_code, $cropYear, $summary->week_no
-                );
-                $summary->loan_deduction = $deduction;
-                $summary->net_proceeds = $summary->net_amount - $deduction;
-            }
+        foreach ($summaryData as $data) {
+            $deduction = $loanController->getActiveDeductions(
+                $data['planter_code'], 
+                $cropYear, 
+                $weekTo
+            );
+            $data['loan_deduction'] = $deduction;
         }
-
-        return Pdf::loadView('pdf.voucher', compact('summaryData', 'autoDeduct'))->stream('voucher-preview.pdf');
     }
+
+    return Pdf::loadView('pdf.voucher', [
+        'summaryData' => $summaryData, 
+        'autoDeduct' => $autoDeduct
+    ])->stream('voucher-preview.pdf');
+}
 
     public function dashboardData(Request $request)
 {
