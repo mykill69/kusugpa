@@ -291,8 +291,16 @@
                     return [...this.filteredWeeks].sort((a, b) => {
                         let valA = a[this.weekSortField] ?? '';
                         let valB = b[this.weekSortField] ?? '';
-                        if (typeof valA === 'string') valA = valA.toLowerCase();
-                        if (typeof valB === 'string') valB = valB.toLowerCase();
+
+                        // Parse as number if the field is 'week_no'
+                        if (this.weekSortField === 'week_no') {
+                            valA = parseInt(valA) || 0;
+                            valB = parseInt(valB) || 0;
+                        } else if (typeof valA === 'string') {
+                            valA = valA.toLowerCase();
+                            valB = valB.toLowerCase();
+                        }
+
                         if (valA < valB) return this.weekSortDir === 'asc' ? -1 : 1;
                         if (valA > valB) return this.weekSortDir === 'asc' ? 1 : -1;
                         return 0;

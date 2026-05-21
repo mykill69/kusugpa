@@ -15,7 +15,9 @@ class CropWeekController extends Controller
     public function index()
 {
     $cropYears = CropYear::orderBy('crop_year', 'desc')->get();
-    $weeks = WeekNo::orderBy('crop_year', 'desc')->orderBy('week_no', 'asc')->get(); // Removed ->with('cropYearRelation')
+    $weeks = WeekNo::orderBy('crop_year', 'desc')
+    ->orderByRaw('CAST(week_no AS UNSIGNED) ASC')  // Sort numerically
+    ->get();
     
     // Prepare data for JavaScript
     $cropYearsData = $cropYears->map(function($c) {

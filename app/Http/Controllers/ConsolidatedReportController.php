@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\ConsolidatedUpload;
 use App\Models\AuditLog;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\DB;
 
 class ConsolidatedReportController extends Controller
 {
@@ -90,4 +91,136 @@ class ConsolidatedReportController extends Controller
         
         return $pdf->download('consolidated-report-' . now()->format('Y-m-d') . '.pdf');
     }
+
+
+    /**
+ * Delete all consolidated records
+ */
+public function deleteAll(Request $request)
+{
+    $count = ConsolidatedUpload::count();
+    
+    if ($count === 0) {
+        return response()->json(['message' => 'No records to delete'], 400);
+    }
+    
+    ConsolidatedUpload::truncate();
+    
+    AuditLog::log('delete', 'consolidated', "Deleted ALL consolidated records ({$count} records)", [
+        'deleted_count' => $count,
+        'deleted_by' => auth()->user()->username ?? 'System'
+    ]);
+    
+    return response()->json([
+        'message' => "Successfully deleted {$count} consolidated records",
+        'count' => $count
+    ]);
+}
+
+/**
+ * Delete consolidated records by crop year and week
+ */
+public function deleteByWeek(Request $request)
+{
+    $request->validate([
+        'crop_year' => 'required|string',
+        'week_no' => 'required|string'
+    ]);
+    
+    $count = ConsolidatedUpload::where('crop_year', $request->crop_year)
+        ->where('week_no', $request->week_no)
+        ->count();
+    
+    if ($count === 0) {
+        return response()->json(['message' => 'No records found for the specified crop year and week'], 400);
+    }
+    
+    ConsolidatedUpload::where('crop_year', $request->crop_year)
+        ->where('week_no', $request->week_no)
+        ->delete();
+    
+    AuditLog::log('delete', 'consolidated', "Deleted consolidated records for {$request->crop_year} Week {$request->week_no} ({$count} records)", [
+        'crop_year' => $request->crop_year,
+        'week_no' => $request->week_no,
+        'deleted_count' => $count,
+        'deleted_by' => auth()->user()->username ?? 'System'
+    ]);
+    
+    return response()->json([
+        'message' => "Successfully deleted {$count} records for {$request->crop_year} Week {$request->week_no}",
+        'count' => $count
+    ]);
+}
+
+/**
+ * Delete selected consolidated records by IDs
+ */
+public function deleteSelected(Request $request)
+{
+    $request->validate([
+        'ids' => 'required|array',
+        'ids.*' => 'required|integer|exists:consolidated_uploads,id'
+    ]);
+    
+    $count = count($request->ids);
+    
+    // Get details before deleting for audit log
+    $records = ConsolidatedUpload::whereIn('id', $request->ids)->get();
+    
+    ConsolidatedUpload::whereIn('id', $request->ids)->delete();
+    
+    AuditLog::log('delete', 'consolidated', "Deleted {$count} selected consolidated records", [
+        'deleted_ids' => $request->ids,
+        'deleted_count' => $count,
+        'sample_records' => $records->take(5)->map(function($r) {
+            return [
+                'planter_code' => $r->planter_code,
+                'planter_name' => $r->planter_name,
+                'crop_year' => $r->crop_year,
+                'week_no' => $r->week_no
+            ];
+        })->toArray(),
+        'deleted_by' => auth()->user()->username ?? 'System'
+    ]);
+    
+    return response()->json([
+        'message' => "Successfully deleted {$count} selected records",
+        'count' => $count
+    ]);
+}
+
+/**
+ * Get available crop years and weeks for delete filters
+ */
+public function getFilters()
+{
+    // Get distinct crop years
+    $cropYears = ConsolidatedUpload::select('crop_year')
+        ->distinct()
+        ->orderBy('crop_year')
+        ->pluck('crop_year');
+    
+    // Get weeks with counts for each crop year
+    $weeksData = ConsolidatedUpload::select('crop_year', 'week_no', DB::raw('COUNT(*) as count'))
+        ->groupBy('crop_year', 'week_no')
+        ->orderBy('crop_year')
+        ->orderBy('week_no')
+        ->get()
+        ->map(function($item) {
+            return [
+                'crop_year' => $item->crop_year,
+                'week_no' => $item->week_no,
+                'count' => $item->count
+            ];
+        });
+    
+    return response()->json([
+        'crop_years' => $cropYears,
+        'weeks_data' => $weeksData
+    ]);
+}
+
+
+
+
 }

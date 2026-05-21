@@ -12,6 +12,7 @@ use App\Models\Molass;
 use App\Models\AuditLog;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class PriceController extends Controller
 {
@@ -239,6 +240,236 @@ public function exportMolassesPDF()
         'generatedDate' => now()->format('F d, Y H:i:s'),
     ])->setPaper('a4', 'landscape');
     return $pdf->download('molasses-registry-' . now()->format('Y-m-d') . '.pdf');
+}
+
+
+
+/**
+ * Get filter data for delete modals
+ */
+public function getRegistryFilters(Request $request)
+{
+    $type = $request->get('type', 'quedan');
+    
+    if ($type === 'quedan') {
+        $model = new Quedan();
+    } else {
+        $model = new Molass();
+    }
+    
+    $cropYears = $model::select('crop_year')->distinct()->orderBy('crop_year')->pluck('crop_year');
+    
+    $weeksData = $model::select('crop_year', 'week_no', DB::raw('COUNT(*) as count'))
+        ->groupBy('crop_year', 'week_no')
+        ->orderBy('crop_year')
+        ->orderBy('week_no')
+        ->get()
+        ->map(function($item) {
+            return [
+                'crop_year' => $item->crop_year,
+                'week_no' => $item->week_no,
+                'count' => $item->count
+            ];
+        });
+    
+    return response()->json([
+        'crop_years' => $cropYears,
+        'weeks_data' => $weeksData
+    ]);
+}
+
+/**
+ * Delete all quedan records
+ */
+public function deleteAllQuedan()
+{
+    $count = Quedan::count();
+    
+    if ($count === 0) {
+        return response()->json(['message' => 'No quedan records to delete'], 400);
+    }
+    
+    Quedan::truncate();
+    
+    AuditLog::log('delete', 'registry', "Deleted ALL quedan records ({$count} records)", [
+        'type' => 'quedan',
+        'deleted_count' => $count,
+        'deleted_by' => auth()->user()->username ?? 'System'
+    ]);
+    
+    return response()->json([
+        'message' => "Successfully deleted {$count} quedan records",
+        'count' => $count
+    ]);
+}
+
+/**
+ * Delete quedan records by crop year and week
+ */
+public function deleteQuedanByWeek(Request $request)
+{
+    $request->validate([
+        'crop_year' => 'required|string',
+        'week_no' => 'required|string'
+    ]);
+    
+    $count = Quedan::where('crop_year', $request->crop_year)
+        ->where('week_no', $request->week_no)
+        ->count();
+    
+    if ($count === 0) {
+        return response()->json(['message' => 'No quedan records found for the specified crop year and week'], 400);
+    }
+    
+    Quedan::where('crop_year', $request->crop_year)
+        ->where('week_no', $request->week_no)
+        ->delete();
+    
+    AuditLog::log('delete', 'registry', "Deleted quedan records for {$request->crop_year} Week {$request->week_no} ({$count} records)", [
+        'type' => 'quedan',
+        'crop_year' => $request->crop_year,
+        'week_no' => $request->week_no,
+        'deleted_count' => $count,
+        'deleted_by' => auth()->user()->username ?? 'System'
+    ]);
+    
+    return response()->json([
+        'message' => "Successfully deleted {$count} quedan records for {$request->crop_year} Week {$request->week_no}",
+        'count' => $count
+    ]);
+}
+
+/**
+ * Delete selected quedan records
+ */
+public function deleteQuedanSelected(Request $request)
+{
+    $request->validate([
+        'ids' => 'required|array',
+        'ids.*' => 'required|integer|exists:quedans,id'
+    ]);
+    
+    $count = count($request->ids);
+    $records = Quedan::whereIn('id', $request->ids)->get();
+    
+    Quedan::whereIn('id', $request->ids)->delete();
+    
+    AuditLog::log('delete', 'registry', "Deleted {$count} selected quedan records", [
+        'type' => 'quedan',
+        'deleted_ids' => $request->ids,
+        'deleted_count' => $count,
+        'sample_records' => $records->take(3)->map(function($r) {
+            return [
+                'planter_code' => $r->planter_code,
+                'planter_name' => $r->planter_name,
+                'crop_year' => $r->crop_year,
+                'week_no' => $r->week_no
+            ];
+        })->toArray(),
+        'deleted_by' => auth()->user()->username ?? 'System'
+    ]);
+    
+    return response()->json([
+        'message' => "Successfully deleted {$count} selected quedan records",
+        'count' => $count
+    ]);
+}
+
+/**
+ * Delete all molasses records
+ */
+public function deleteAllMolasses()
+{
+    $count = Molass::count();
+    
+    if ($count === 0) {
+        return response()->json(['message' => 'No molasses records to delete'], 400);
+    }
+    
+    Molass::truncate();
+    
+    AuditLog::log('delete', 'registry', "Deleted ALL molasses records ({$count} records)", [
+        'type' => 'molasses',
+        'deleted_count' => $count,
+        'deleted_by' => auth()->user()->username ?? 'System'
+    ]);
+    
+    return response()->json([
+        'message' => "Successfully deleted {$count} molasses records",
+        'count' => $count
+    ]);
+}
+
+/**
+ * Delete molasses records by crop year and week
+ */
+public function deleteMolassesByWeek(Request $request)
+{
+    $request->validate([
+        'crop_year' => 'required|string',
+        'week_no' => 'required|string'
+    ]);
+    
+    $count = Molass::where('crop_year', $request->crop_year)
+        ->where('week_no', $request->week_no)
+        ->count();
+    
+    if ($count === 0) {
+        return response()->json(['message' => 'No molasses records found for the specified crop year and week'], 400);
+    }
+    
+    Molass::where('crop_year', $request->crop_year)
+        ->where('week_no', $request->week_no)
+        ->delete();
+    
+    AuditLog::log('delete', 'registry', "Deleted molasses records for {$request->crop_year} Week {$request->week_no} ({$count} records)", [
+        'type' => 'molasses',
+        'crop_year' => $request->crop_year,
+        'week_no' => $request->week_no,
+        'deleted_count' => $count,
+        'deleted_by' => auth()->user()->username ?? 'System'
+    ]);
+    
+    return response()->json([
+        'message' => "Successfully deleted {$count} molasses records for {$request->crop_year} Week {$request->week_no}",
+        'count' => $count
+    ]);
+}
+
+/**
+ * Delete selected molasses records
+ */
+public function deleteMolassesSelected(Request $request)
+{
+    $request->validate([
+        'ids' => 'required|array',
+        'ids.*' => 'required|integer|exists:molasses,id'
+    ]);
+    
+    $count = count($request->ids);
+    $records = Molass::whereIn('id', $request->ids)->get();
+    
+    Molass::whereIn('id', $request->ids)->delete();
+    
+    AuditLog::log('delete', 'registry', "Deleted {$count} selected molasses records", [
+        'type' => 'molasses',
+        'deleted_ids' => $request->ids,
+        'deleted_count' => $count,
+        'sample_records' => $records->take(3)->map(function($r) {
+            return [
+                'planter_code' => $r->planter_code,
+                'planter_name' => $r->planter_name,
+                'crop_year' => $r->crop_year,
+                'week_no' => $r->week_no
+            ];
+        })->toArray(),
+        'deleted_by' => auth()->user()->username ?? 'System'
+    ]);
+    
+    return response()->json([
+        'message' => "Successfully deleted {$count} selected molasses records",
+        'count' => $count
+    ]);
 }
 
 }

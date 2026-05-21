@@ -251,13 +251,79 @@ class MenuController extends Controller
         return $pdf->download('summary-report.pdf');
     }
 
+    public function getPlanterNames(Request $request)
+{
+    $cropYear = $request->input('crop_year');
+    $weekFrom = $request->input('week_from');
+    $weekTo = $request->input('week_to');
+    
+    Log::info('Fetching planter names', [
+        'crop_year' => $cropYear,
+        'week_from' => $weekFrom,
+        'week_to' => $weekTo
+    ]);
+    
+    if (!$cropYear || !$weekFrom || !$weekTo) {
+        return response()->json([]);
+    }
+    
+    // Get unique planter codes with names from quedans
+    $quedanPlanters = Quedan::where('crop_year', $cropYear)
+        ->whereBetween('week_no', [(int)$weekFrom, (int)$weekTo])
+        ->select('planter_code', 'planter_name')
+        ->distinct()
+        ->get();
+    
+    Log::info('Quedan planters found: ' . $quedanPlanters->count());
+    
+    // Get unique planter codes with names from molasses
+    $molassesPlanters = Molass::where('crop_year', $cropYear)
+        ->whereBetween('week_no', [(int)$weekFrom, (int)$weekTo])
+        ->select('planter_code', 'planter_name')
+        ->distinct()
+        ->get();
+    
+    Log::info('Molasses planters found: ' . $molassesPlanters->count());
+    
+    // Get unique planter codes with names from consolidated uploads
+    $consolidatedPlanters = ConsolidatedUpload::where('crop_year', $cropYear)
+        ->whereBetween('week_no', [(int)$weekFrom, (int)$weekTo])
+        ->select('planter_code', 'planter_name')
+        ->distinct()
+        ->get();
+    
+    Log::info('Consolidated planters found: ' . $consolidatedPlanters->count());
+    
+    // Merge all planters and get unique by planter_code
+    $allPlanters = collect();
+    
+    if ($quedanPlanters->isNotEmpty()) {
+        $allPlanters = $allPlanters->concat($quedanPlanters);
+    }
+    
+    if ($molassesPlanters->isNotEmpty()) {
+        $allPlanters = $allPlanters->concat($molassesPlanters);
+    }
+    
+    if ($consolidatedPlanters->isNotEmpty()) {
+        $allPlanters = $allPlanters->concat($consolidatedPlanters);
+    }
+    
+    // Remove duplicates by planter_code
+    $allPlanters = $allPlanters->unique('planter_code')
+        ->sortBy('planter_name')
+        ->values();
+    
+    Log::info('Total unique planters: ' . $allPlanters->count());
+    
+    return response()->json($allPlanters);
+}
     public function printVoucher(Request $request)
 {
     AuditLog::log('view', 'voucher', 'Viewed print voucher page');
     
     $cropYear = CropYear::pluck('crop_year');
     
-    // Get week numbers from week_no table
     $weekNos = WeekNo::select('week_no')
         ->distinct()
         ->orderBy('week_no')
@@ -268,11 +334,8 @@ class MenuController extends Controller
     $weekTo = $request->input('week_to');
     $selectedPlanters = $request->input('planter_name');
 
-    // Get planter names from quedans table
-    $planterNames = Quedan::select('planter_name')
-        ->distinct()
-        ->orderBy('planter_name')
-        ->pluck('planter_name');
+    // Return empty initially - will be populated via AJAX
+    $planterNames = collect([]);
 
     return view('menu.printVoucher', compact(
         'cropYear', 'weekNos', 'selectedCropYear', 'weekFrom', 'weekTo',
@@ -285,7 +348,7 @@ public function voucherPDF(Request $request)
     $cropYear = $request->input('crop_year');
     $weekFrom = $request->input('week_from');
     $weekTo = $request->input('week_to');
-    $planterNames = $request->input('planter_name');
+    $planterNames = $request->input('planter_name'); // These are actually planter_codes now
 
     AuditLog::log('print', 'voucher', 'Generated voucher PDF from quedan and molasses data', [
         'crop_year' => $cropYear,
@@ -298,32 +361,33 @@ public function voucherPDF(Request $request)
         ->whereBetween('week_no', [$weekFrom, $weekTo])
         ->pluck('week_end_date', 'week_no');
 
-    // Query quedans with their prices
+    // Query quedans - FILTER BY PLANTER_CODE
     $quedanQuery = Quedan::where('quedans.crop_year', $cropYear)
         ->whereBetween('quedans.week_no', [$weekFrom, $weekTo]);
 
     if (!empty($planterNames)) {
-        $quedanQuery->whereIn('quedans.planter_name', (array) $planterNames);
+        $quedanQuery->whereIn('quedans.planter_code', (array) $planterNames);
     }
 
-    $quedans = $quedanQuery
-        ->leftJoin('quedan_price', function($join) {
-            $join->on('quedans.crop_year', '=', 'quedan_price.crop_year')
-                 ->on('quedans.week_no', '=', 'quedan_price.week_no');
-        })
-        ->select(
-            'quedans.*',
-            'quedan_price.quedan_type',
-            'quedan_price.quedan_price'
-        )
-        ->get();
+    $quedans = $quedanQuery->get();
 
-    // Query molasses with their prices
+    // Get quedan prices
+    $quedanPrices = QuedanPrice::where('crop_year', $cropYear)
+        ->whereBetween('week_no', [$weekFrom, $weekTo])
+        ->get()
+        ->groupBy('quedan_type');
+
+    Log::info('Quedan prices found:', [
+        'types' => $quedanPrices->keys()->toArray(),
+        'counts' => $quedanPrices->map->count()->toArray()
+    ]);
+
+    // Query molasses - FILTER BY PLANTER_CODE
     $molassesQuery = Molass::where('molasses.crop_year', $cropYear)
         ->whereBetween('molasses.week_no', [$weekFrom, $weekTo]);
 
     if (!empty($planterNames)) {
-        $molassesQuery->whereIn('molasses.planter_name', (array) $planterNames);
+        $molassesQuery->whereIn('molasses.planter_code', (array) $planterNames);
     }
 
     $molasses = $molassesQuery
@@ -337,12 +401,12 @@ public function voucherPDF(Request $request)
         )
         ->get();
 
-    // Query consolidated uploads
+    // Query consolidated uploads - FILTER BY PLANTER_CODE
     $consolidatedQuery = ConsolidatedUpload::where('crop_year', $cropYear)
         ->whereBetween('week_no', [$weekFrom, $weekTo]);
 
     if (!empty($planterNames)) {
-        $consolidatedQuery->whereIn('planter_name', (array) $planterNames);
+        $consolidatedQuery->whereIn('planter_code', (array) $planterNames);
     }
 
     $consolidatedUploads = $consolidatedQuery->get();
@@ -391,22 +455,36 @@ public function voucherPDF(Request $request)
             ];
         }
         
-        // Aggregate quedan data by type
-        switch ($quedan->quedan_type) {
-            case 'A':
-                $summaryData[$key]['quedan_a_lkg'] += $quedan->sugar_lkg;
-                $summaryData[$key]['quedan_a_price'] = $quedan->quedan_price;
-                break;
-            case 'B':
-                $summaryData[$key]['quedan_b_lkg'] += $quedan->sugar_lkg;
-                $summaryData[$key]['quedan_b_price'] = $quedan->quedan_price;
-                $summaryData[$key]['quedan_b_liens'] += $quedan->total_liens;
-                break;
-            case 'D':
-                $summaryData[$key]['quedan_d_lkg'] += $quedan->sugar_lkg;
-                $summaryData[$key]['quedan_d_price'] = $quedan->quedan_price;
-                $summaryData[$key]['quedan_d_liens'] += $quedan->total_liens;
-                break;
+        // Process each quedan for all available types
+        // Type A
+        if (isset($quedanPrices['A'])) {
+            $priceA = $quedanPrices['A']->first()->quedan_price ?? 0;
+            $summaryData[$key]['quedan_a_lkg'] += $quedan->sugar_lkg;
+            $summaryData[$key]['quedan_a_price'] = $priceA;
+        }
+        
+        // Type B (default type based on your CSV structure)
+        if (isset($quedanPrices['B'])) {
+            $priceB = $quedanPrices['B']->first()->quedan_price ?? 0;
+            $summaryData[$key]['quedan_b_lkg'] += $quedan->sugar_lkg;
+            $summaryData[$key]['quedan_b_price'] = $priceB;
+            $summaryData[$key]['quedan_b_liens'] += $quedan->total_liens;
+        }
+        
+        // Type D
+        if (isset($quedanPrices['D'])) {
+            $priceD = $quedanPrices['D']->first()->quedan_price ?? 0;
+            $summaryData[$key]['quedan_d_lkg'] += $quedan->sugar_lkg;
+            $summaryData[$key]['quedan_d_price'] = $priceD;
+            $summaryData[$key]['quedan_d_liens'] += $quedan->total_liens;
+        }
+        
+        // If no specific type exists, default to Type B
+        if (!isset($quedanPrices['A']) && !isset($quedanPrices['B']) && !isset($quedanPrices['D'])) {
+            // Default all quedans to Type B
+            $summaryData[$key]['quedan_b_lkg'] += $quedan->sugar_lkg;
+            $summaryData[$key]['quedan_b_price'] = 0; // No price available
+            $summaryData[$key]['quedan_b_liens'] += $quedan->total_liens;
         }
     }
     
@@ -421,31 +499,26 @@ public function voucherPDF(Request $request)
                 'tin_no' => $mol->tin_no,
                 'week_no' => $weekFrom . ' - ' . $weekTo,
                 'week_end_date' => $weekEndDates[$weekTo] ?? '',
-                // Quedan Type A
                 'quedan_a_lkg' => 0,
                 'quedan_a_price' => 0,
-                // Quedan Type B
                 'quedan_b_lkg' => 0,
                 'quedan_b_price' => 0,
                 'quedan_b_liens' => 0,
                 'quedan_b_service_charge' => 0,
                 'quedan_b_insurance' => 0,
                 'quedan_b_tax' => 0,
-                // Quedan Type D
                 'quedan_d_lkg' => 0,
                 'quedan_d_price' => 0,
                 'quedan_d_liens' => 0,
                 'quedan_d_service_charge' => 0,
                 'quedan_d_insurance' => 0,
                 'quedan_d_tax' => 0,
-                // Molasses
                 'mol_net' => 0,
                 'mol_price' => 0,
                 'molasses_liens' => 0,
                 'molasses_service_charge' => 0,
                 'molasses_insurance' => 0,
                 'molasses_tax' => 0,
-                // Consolidated Upload
                 'consolidated_total' => 0,
                 'consolidated_ta_wt' => 0,
             ];
@@ -466,31 +539,26 @@ public function voucherPDF(Request $request)
                 'tin_no' => '',
                 'week_no' => $weekFrom . ' - ' . $weekTo,
                 'week_end_date' => $weekEndDates[$weekTo] ?? '',
-                // Quedan Type A
                 'quedan_a_lkg' => 0,
                 'quedan_a_price' => 0,
-                // Quedan Type B
                 'quedan_b_lkg' => 0,
                 'quedan_b_price' => 0,
                 'quedan_b_liens' => 0,
                 'quedan_b_service_charge' => 0,
                 'quedan_b_insurance' => 0,
                 'quedan_b_tax' => 0,
-                // Quedan Type D
                 'quedan_d_lkg' => 0,
                 'quedan_d_price' => 0,
                 'quedan_d_liens' => 0,
                 'quedan_d_service_charge' => 0,
                 'quedan_d_insurance' => 0,
                 'quedan_d_tax' => 0,
-                // Molasses
                 'mol_net' => 0,
                 'mol_price' => 0,
                 'molasses_liens' => 0,
                 'molasses_service_charge' => 0,
                 'molasses_insurance' => 0,
                 'molasses_tax' => 0,
-                // Consolidated Upload
                 'consolidated_total' => 0,
                 'consolidated_ta_wt' => 0,
             ];
@@ -502,6 +570,8 @@ public function voucherPDF(Request $request)
     
     // Convert to collection
     $summaryData = collect(array_values($summaryData));
+    
+    Log::info('Final summary data:', $summaryData->toArray());
     
     $autoDeduct = LoanSetting::get('auto_deduct', true);
     if ($autoDeduct) {

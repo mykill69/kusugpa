@@ -123,11 +123,18 @@ Route::middleware(['login_auth'])->group(function () {
     // Consolidated Report - ADD THESE
     Route::get('/consolidated-report', [ConsolidatedReportController::class, 'index'])->name('consolidated-report');
     Route::get('/consolidated-report/export', [ConsolidatedReportController::class, 'exportPDF'])->name('consolidated-report.export');
+
+    Route::delete('/consolidated-report/delete-all', [ConsolidatedReportController::class, 'deleteAll'])->name('consolidated-report.delete-all');
+    Route::delete('/consolidated-report/delete-by-week', [ConsolidatedReportController::class, 'deleteByWeek'])->name('consolidated-report.delete-by-week');
+    Route::delete('/consolidated-report/delete-selected', [ConsolidatedReportController::class, 'deleteSelected'])->name('consolidated-report.delete-selected');
+    Route::get('/consolidated-report/filters', [ConsolidatedReportController::class, 'getFilters'])->name('consolidated-report.filters');
     
 
     // Print Voucher
     Route::get('/print-voucher', [MenuController::class, 'printVoucher'])->name('printVoucher');
     Route::get('/voucher/pdf-preview', [MenuController::class, 'voucherPDF'])->name('voucher.pdf');
+
+    Route::get('/get-planter-names', [MenuController::class, 'getPlanterNames'])->name('get.planter.names');
 
     // User Management
     Route::get('/user-management', [UserManagementController::class, 'userManagement'])
@@ -174,6 +181,15 @@ Route::middleware(['login_auth:manage-crop-weeks'])->group(function () {
     Route::post('/quedans/bulk-update', [PriceController::class, 'bulkUpdateQuedan'])->name('quedans.bulk-update');
     // routes/web.php
     Route::get('/quedan-molasses-registry/data', [PriceController::class, 'registryData'])->name('registry.data');
+
+    // Registry delete routes
+    Route::delete('/registry/quedan/delete-all', [PriceController::class, 'deleteAllQuedan'])->name('registry.quedan.delete-all');
+    Route::delete('/registry/quedan/delete-by-week', [PriceController::class, 'deleteQuedanByWeek'])->name('registry.quedan.delete-by-week');
+    Route::delete('/registry/quedan/delete-selected', [PriceController::class, 'deleteQuedanSelected'])->name('registry.quedan.delete-selected');
+    Route::delete('/registry/molasses/delete-all', [PriceController::class, 'deleteAllMolasses'])->name('registry.molasses.delete-all');
+    Route::delete('/registry/molasses/delete-by-week', [PriceController::class, 'deleteMolassesByWeek'])->name('registry.molasses.delete-by-week');
+    Route::delete('/registry/molasses/delete-selected', [PriceController::class, 'deleteMolassesSelected'])->name('registry.molasses.delete-selected');
+    Route::get('/registry/filters', [PriceController::class, 'getRegistryFilters'])->name('registry.filters');
 
     // Buy Molasses
     Route::get('/buy-molasses', [PriceController::class, 'buyMolasses'])->name('molasses-buy.index');
