@@ -14,6 +14,7 @@ use App\Http\Controllers\PriceController;
 use App\Http\Controllers\AuditLogController;  
 use App\Http\Controllers\PlanterProfileController;
 use App\Http\Controllers\ConsolidatedReportController;
+use App\Http\Controllers\TruckingAllowanceController;
 
 
 /*
@@ -128,6 +129,15 @@ Route::middleware(['login_auth'])->group(function () {
     Route::delete('/consolidated-report/delete-by-week', [ConsolidatedReportController::class, 'deleteByWeek'])->name('consolidated-report.delete-by-week');
     Route::delete('/consolidated-report/delete-selected', [ConsolidatedReportController::class, 'deleteSelected'])->name('consolidated-report.delete-selected');
     Route::get('/consolidated-report/filters', [ConsolidatedReportController::class, 'getFilters'])->name('consolidated-report.filters');
+
+
+    // Trucking Allowance Report
+    Route::get('/trucking-allowance-report', [TruckingAllowanceController::class, 'index'])->name('trucking-allowance-report');
+    Route::get('/trucking-allowance-report/export', [TruckingAllowanceController::class, 'exportPDF'])->name('trucking-allowance-report.export');
+    Route::get('/trucking-allowance-report/filters', [TruckingAllowanceController::class, 'getFilters'])->name('trucking-allowance-report.filters');
+    Route::delete('/trucking-allowance-report/delete-all', [TruckingAllowanceController::class, 'deleteAll'])->name('trucking-allowance-report.delete-all');
+    Route::delete('/trucking-allowance-report/delete-by-week', [TruckingAllowanceController::class, 'deleteByWeek'])->name('trucking-allowance-report.delete-by-week');
+    Route::delete('/trucking-allowance-report/delete-selected', [TruckingAllowanceController::class, 'deleteSelected'])->name('trucking-allowance-report.delete-selected');
     
 
     // Print Voucher

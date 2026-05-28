@@ -1,7 +1,6 @@
 @php
     function convertToWords($amount)
     {
-        // Handle negative values
         $isNegative = $amount < 0;
         $amount = abs($amount);
 
@@ -196,34 +195,33 @@
 <body>
     @foreach ($summaryData as $record)
         @php
-            // Quedan Type A calculations
             $quedan_a_lkg = $record['quedan_a_lkg'] ?? 0;
             $quedan_a_price = $record['quedan_a_price'] ?? 0;
             $quedan_a_gross = $quedan_a_lkg * $quedan_a_price;
 
-            // Quedan Type B calculations
             $quedan_b_lkg = $record['quedan_b_lkg'] ?? 0;
             $quedan_b_price = $record['quedan_b_price'] ?? 0;
             $quedan_b_gross = $quedan_b_lkg * $quedan_b_price;
             $quedan_b_liens = $record['quedan_b_liens'] ?? 0;
-            $quedan_b_service = $record['quedan_b_service_charge'] ?? 0;
-            $quedan_b_insurance = $record['quedan_b_insurance'] ?? 0;
-            $quedan_b_tax = $record['quedan_b_tax'] ?? 0;
+
+            $has_additional_insurance = $record['has_additional_insurance'] ?? false;
+
+            $quedan_b_service = $quedan_b_lkg * 8.0;
+            $quedan_b_insurance = $has_additional_insurance ? $quedan_b_lkg * 10.0 : $quedan_b_lkg * 3.0;
+            $quedan_b_tax = $quedan_b_gross * 0.01;
             $quedan_b_total_deductions = $quedan_b_service + $quedan_b_insurance + $quedan_b_tax;
             $quedan_b_net = $quedan_b_gross + $quedan_b_liens - $quedan_b_total_deductions;
 
-            // Quedan Type D calculations
             $quedan_d_lkg = $record['quedan_d_lkg'] ?? 0;
             $quedan_d_price = $record['quedan_d_price'] ?? 0;
             $quedan_d_gross = $quedan_d_lkg * $quedan_d_price;
             $quedan_d_liens = $record['quedan_d_liens'] ?? 0;
-            $quedan_d_service = $record['quedan_d_service_charge'] ?? 0;
-            $quedan_d_insurance = $record['quedan_d_insurance'] ?? 0;
-            $quedan_d_tax = $record['quedan_d_tax'] ?? 0;
+            $quedan_d_service = $quedan_d_lkg * 8.0;
+            $quedan_d_insurance = $quedan_d_lkg * 3.0;
+            $quedan_d_tax = $quedan_d_gross * 0.01;
             $quedan_d_total_deductions = $quedan_d_liens + $quedan_d_service + $quedan_d_insurance + $quedan_d_tax;
             $quedan_d_net = $quedan_d_gross - $quedan_d_total_deductions;
 
-            // Quedan totals
             $quedanGrossProceeds = $quedan_a_gross + $quedan_b_gross + $quedan_d_gross;
             $quedanTotalLiens = $quedan_b_liens + $quedan_d_liens;
             $quedanTotalServiceCharge = $quedan_b_service + $quedan_d_service;
@@ -232,35 +230,30 @@
             $quedanTotalDeductions = $quedanTotalServiceCharge + $quedanTotalInsurance + $quedanTotalTax;
             $quedanNetProceeds = $quedanGrossProceeds + $quedanTotalLiens - $quedanTotalDeductions;
 
-            // Molasses calculations
             $mol_net = $record['mol_net'] ?? 0;
             $mol_price = $record['mol_price'] ?? 0;
             $molasses_gross = $mol_net * $mol_price;
             $molasses_liens = $record['molasses_liens'] ?? 0;
-            $molasses_service = $record['molasses_service_charge'] ?? 0;
-            $molasses_insurance = $record['molasses_insurance'] ?? 0;
-            $molasses_tax = $record['molasses_tax'] ?? 0;
+            $molasses_service = $mol_net * 20.0;
+            $molasses_insurance = $mol_net * 120.0;
+            $molasses_tax = $molasses_gross * 0.01;
             $molasses_total_deductions = $molasses_liens + $molasses_service + $molasses_insurance + $molasses_tax;
             $molasses_net = $molasses_gross - $molasses_total_deductions;
 
-            // Consolidated Upload total
             $consolidated_ta_wt = $record['consolidated_ta_wt'] ?? 0;
             $consolidated_total = $record['consolidated_total'] ?? 0;
 
-            // Grand totals (including consolidated)
             $totalGrossProceeds = $quedanGrossProceeds + $molasses_gross + $consolidated_total;
             $totalDeductions = $quedanTotalDeductions + $molasses_total_deductions;
             $totalNetProceeds = $quedanNetProceeds + $molasses_net + $consolidated_total - $totalDeductions;
         @endphp
 
         <div class="page">
-            <!-- Header -->
             <div class="header">
                 <p class="company-name">Kabankalan United Sugar Planter Association</p>
                 <p>Repullo St., Kabankalan City</p>
             </div>
 
-            <!-- Voucher Info -->
             <table class="info-table">
                 <tr>
                     <td class="text-center" width="70%">
@@ -285,7 +278,6 @@
                     {{ $record['week_end_date'] ? date('m-d-Y', strtotime($record['week_end_date'])) : '' }}</strong>
             </p>
 
-            <!-- Main Table -->
             <table class="voucher-table">
                 <thead>
                     <tr>
@@ -302,7 +294,6 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- Row A - Quedan Type A -->
                     <tr>
                         <td><strong>A</strong></td>
                         <td>{{ $quedan_a_lkg ? number_format($quedan_a_lkg, 3) : '' }}</td>
@@ -316,7 +307,6 @@
                         <td>{{ $quedan_a_gross ? number_format($quedan_a_gross, 2) : '' }}</td>
                     </tr>
 
-                    <!-- Row B - Quedan Type B -->
                     <tr>
                         <td><strong>B</strong></td>
                         <td>{{ $quedan_b_lkg ? number_format($quedan_b_lkg, 3) : '' }}</td>
@@ -326,11 +316,11 @@
                         <td>{{ $quedan_b_service ? number_format($quedan_b_service, 2) : '' }}</td>
                         <td>{{ $quedan_b_insurance ? number_format($quedan_b_insurance, 2) : '' }}</td>
                         <td>{{ $quedan_b_tax ? number_format($quedan_b_tax, 2) : '' }}</td>
-                        <td>{{ $quedan_b_total_deductions ? number_format($quedan_b_total_deductions, 2) : '' }}</td>
+                        <td>{{ $quedan_b_total_deductions ? number_format($quedan_b_total_deductions, 2) : '' }}
+                        </td>
                         <td>{{ $quedan_b_net ? number_format($quedan_b_net, 2) : '' }}</td>
                     </tr>
 
-                    <!-- Row D - Quedan Type D -->
                     <tr>
                         <td><strong>D</strong></td>
                         <td>{{ $quedan_d_lkg ? number_format($quedan_d_lkg, 3) : '' }}</td>
@@ -340,11 +330,11 @@
                         <td>{{ $quedan_d_service ? number_format($quedan_d_service, 2) : '' }}</td>
                         <td>{{ $quedan_d_insurance ? number_format($quedan_d_insurance, 2) : '' }}</td>
                         <td>{{ $quedan_d_tax ? number_format($quedan_d_tax, 2) : '' }}</td>
-                        <td>{{ $quedan_d_total_deductions ? number_format($quedan_d_total_deductions, 2) : '' }}</td>
+                        <td>{{ $quedan_d_total_deductions ? number_format($quedan_d_total_deductions, 2) : '' }}
+                        </td>
                         <td>{{ $quedan_d_net ? number_format($quedan_d_net, 2) : '' }}</td>
                     </tr>
 
-                    <!-- Row M - Molasses -->
                     <tr>
                         <td><strong>M</strong></td>
                         <td>{{ $mol_net ? number_format($mol_net, 3) : '' }}</td>
@@ -354,11 +344,11 @@
                         <td>{{ $molasses_service ? number_format($molasses_service, 2) : '' }}</td>
                         <td>{{ $molasses_insurance ? number_format($molasses_insurance, 2) : '' }}</td>
                         <td>{{ $molasses_tax ? number_format($molasses_tax, 2) : '' }}</td>
-                        <td>{{ $molasses_total_deductions ? number_format($molasses_total_deductions, 2) : '' }}</td>
+                        <td>{{ $molasses_total_deductions ? number_format($molasses_total_deductions, 2) : '' }}
+                        </td>
                         <td>{{ $molasses_net ? number_format($molasses_net, 2) : '' }}</td>
                     </tr>
 
-                    <!-- Row T - Consolidated Upload -->
                     <tr>
                         <td><strong>T</strong></td>
                         <td>{{ $consolidated_ta_wt ? number_format($consolidated_ta_wt, 3) : '' }}</td>
@@ -368,12 +358,12 @@
                         <td>{{ $consolidated_total ? number_format($consolidated_total, 2) : '' }}</td>
                     </tr>
 
-                    <!-- Grand Total -->
                     <tr style="border-top: 2px solid #000; border-bottom: 2px solid #000;">
                         <td></td>
                         <td><strong>TOTAL >>>>>>></strong></td>
                         <td></td>
-                        <td class="font-bold">{{ $totalGrossProceeds ? number_format($totalGrossProceeds, 2) : '' }}
+                        <td class="font-bold">
+                            {{ $totalGrossProceeds ? number_format($totalGrossProceeds, 2) : '' }}
                         </td>
                         <td class="font-bold">
                             {{ $quedanTotalLiens + $molasses_liens ? number_format($quedanTotalLiens + $molasses_liens, 2) : '' }}
@@ -388,17 +378,16 @@
                             {{ $quedanTotalTax + $molasses_tax ? number_format($quedanTotalTax + $molasses_tax, 2) : '' }}
                         </td>
                         <td class="font-bold">{{ $totalDeductions ? number_format($totalDeductions, 2) : '' }}</td>
-                        <td class="font-bold">{{ $totalNetProceeds ? number_format($totalNetProceeds, 2) : '' }}</td>
+                        <td class="font-bold">{{ $totalNetProceeds ? number_format($totalNetProceeds, 2) : '' }}
+                        </td>
                     </tr>
                 </tbody>
             </table>
 
-            <!-- Amount in Words -->
             <div class="amount-words">
                 <strong>Amount in Words:</strong> {{ convertToWords($totalNetProceeds) }}
             </div>
 
-            <!-- Totals Section -->
             <div class="totals-section clearfix">
                 <table style="float: right; width: 50%; margin-top: 20px;">
                     <tr>
@@ -419,7 +408,6 @@
 
             <div style="clear: both;"></div>
 
-            <!-- Signature Section -->
             <div class="signature-section">
                 <div class="signature-box">
                     <div class="signature-line">Prepared by</div>
