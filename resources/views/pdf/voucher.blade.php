@@ -206,8 +206,10 @@
 
             $has_additional_insurance = $record['has_additional_insurance'] ?? false;
 
-            $quedan_b_service = $quedan_b_lkg * 8.0;
-            $quedan_b_insurance = $has_additional_insurance ? $quedan_b_lkg * 10.0 : $quedan_b_lkg * 3.0;
+            $quedan_b_service = $has_additional_insurance
+                ? $quedan_b_lkg * 8.0 + $quedan_b_lkg * 7.0
+                : $quedan_b_lkg * 8.0;
+            $quedan_b_insurance = $quedan_b_lkg * 3.0;
             $quedan_b_tax = $quedan_b_gross * 0.01;
             $quedan_b_total_deductions = $quedan_b_service + $quedan_b_insurance + $quedan_b_tax;
             $quedan_b_net = $quedan_b_gross + $quedan_b_liens - $quedan_b_total_deductions;
