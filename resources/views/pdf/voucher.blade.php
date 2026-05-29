@@ -204,7 +204,11 @@
             $quedan_b_gross = $quedan_b_lkg * $quedan_b_price;
             $quedan_b_liens = $record['quedan_b_liens'] ?? 0;
 
+
+            
             $has_additional_insurance = $record['has_additional_insurance'] ?? false;
+
+
 
             $quedan_b_service = $has_additional_insurance
                 ? $quedan_b_lkg * 8.0 + $quedan_b_lkg * 7.0
