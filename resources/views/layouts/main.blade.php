@@ -865,31 +865,31 @@
                 </div>
                 
                 ${needsCropWeek.includes(type) ? `
-                        <!-- Crop Year & Week Selection -->
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
-                            <div>
-                                <label style="display: block; font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 4px; text-align: left;">
-                                    <i class="fas fa-calendar-alt" style="color: #16a34a; margin-right: 4px;"></i> Crop Year *
-                                </label>
-                                <select id="uploadCropYear" onchange="onUploadCropYearChange(this)" 
-                                    style="width: 100%; padding: 8px 12px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 14px; background: white;">
-                                    <option value="">Select Crop Year</option>
-                                    @foreach (App\Models\CropYear::orderBy('crop_year', 'desc')->pluck('crop_year') as $cy)
-                                        <option value="{{ $cy }}">{{ $cy }}</option>
-                                    @endforeach
-                                </select>
+                            <!-- Crop Year & Week Selection -->
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+                                <div>
+                                    <label style="display: block; font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 4px; text-align: left;">
+                                        <i class="fas fa-calendar-alt" style="color: #16a34a; margin-right: 4px;"></i> Crop Year *
+                                    </label>
+                                    <select id="uploadCropYear" onchange="onUploadCropYearChange(this)" 
+                                        style="width: 100%; padding: 8px 12px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 14px; background: white;">
+                                        <option value="">Select Crop Year</option>
+                                        @foreach (App\Models\CropYear::orderBy('crop_year', 'desc')->pluck('crop_year') as $cy)
+                                            <option value="{{ $cy }}">{{ $cy }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style="display: block; font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 4px; text-align: left;">
+                                        <i class="fas fa-calendar-week" style="color: #16a34a; margin-right: 4px;"></i> Week No *
+                                    </label>
+                                    <select id="uploadWeekNo" onchange="checkUploadReady()" disabled
+                                        style="width: 100%; padding: 8px 12px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 14px; background: white; opacity: 0.6;">
+                                        <option value="">Select Week</option>
+                                    </select>
+                                </div>
                             </div>
-                            <div>
-                                <label style="display: block; font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 4px; text-align: left;">
-                                    <i class="fas fa-calendar-week" style="color: #16a34a; margin-right: 4px;"></i> Week No *
-                                </label>
-                                <select id="uploadWeekNo" onchange="checkUploadReady()" disabled
-                                    style="width: 100%; padding: 8px 12px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 14px; background: white; opacity: 0.6;">
-                                    <option value="">Select Week</option>
-                                </select>
-                            </div>
-                        </div>
-                        ` : ''}
+                            ` : ''}
 
                 <div style="border: 2px dashed #d1d5db; border-radius: 12px; padding: 2rem; text-align: center; background: #f9fafb; transition: all 0.3s ease;" 
                     id="dropZone" onmouseover="this.style.borderColor='#16a34a'; this.style.background='#f0fdf4';" 
