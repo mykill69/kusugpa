@@ -15,6 +15,7 @@ use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\PlanterProfileController;
 use App\Http\Controllers\ConsolidatedReportController;
 use App\Http\Controllers\TruckingAllowanceController;
+use Illuminate\Http\Request;
 
 
 /*
@@ -109,6 +110,16 @@ Route::middleware(['login_auth'])->group(function () {
 
    
     Route::get('/get-weeks-by-crop-year', [UpdatesController::class, 'getWeeksByCropYear'])->name('weeks.by-crop-year');
+    Route::get('/get-weeks', function(Request $request) {
+    $cropYear = $request->get('crop_year');
+    $weeks = \App\Models\WeekNo::where('crop_year', $cropYear)
+        ->select('week_no')
+        ->distinct()
+        ->orderByRaw('CAST(week_no AS UNSIGNED) ASC')
+        ->pluck('week_no');
+    
+    return response()->json(['weeks' => $weeks]);
+})->name('get.weeks');
 
     // Dashboard API endpoints
     Route::get('/dashboard/data', [MenuController::class, 'dashboardData'])->name('dashboard.data');

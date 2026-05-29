@@ -865,31 +865,31 @@
                 </div>
                 
                 ${needsCropWeek.includes(type) ? `
-                            <!-- Crop Year & Week Selection -->
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
-                                <div>
-                                    <label style="display: block; font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 4px; text-align: left;">
-                                        <i class="fas fa-calendar-alt" style="color: #16a34a; margin-right: 4px;"></i> Crop Year *
-                                    </label>
-                                    <select id="uploadCropYear" onchange="onUploadCropYearChange(this)" 
-                                        style="width: 100%; padding: 8px 12px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 14px; background: white;">
-                                        <option value="">Select Crop Year</option>
-                                        @foreach (App\Models\CropYear::orderBy('crop_year', 'desc')->pluck('crop_year') as $cy)
-                                            <option value="{{ $cy }}">{{ $cy }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                <div>
-                                    <label style="display: block; font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 4px; text-align: left;">
-                                        <i class="fas fa-calendar-week" style="color: #16a34a; margin-right: 4px;"></i> Week No *
-                                    </label>
-                                    <select id="uploadWeekNo" onchange="checkUploadReady()" disabled
-                                        style="width: 100%; padding: 8px 12px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 14px; background: white; opacity: 0.6;">
-                                        <option value="">Select Week</option>
-                                    </select>
-                                </div>
-                            </div>
-                            ` : ''}
+                                    <!-- Crop Year & Week Selection -->
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+                                        <div>
+                                            <label style="display: block; font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 4px; text-align: left;">
+                                                <i class="fas fa-calendar-alt" style="color: #16a34a; margin-right: 4px;"></i> Crop Year *
+                                            </label>
+                                            <select id="uploadCropYear" onchange="onUploadCropYearChange(this)" 
+                                                style="width: 100%; padding: 8px 12px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 14px; background: white;">
+                                                <option value="">Select Crop Year</option>
+                                                @foreach (App\Models\CropYear::orderBy('crop_year', 'desc')->pluck('crop_year') as $cy)
+                                                    <option value="{{ $cy }}">{{ $cy }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label style="display: block; font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 4px; text-align: left;">
+                                                <i class="fas fa-calendar-week" style="color: #16a34a; margin-right: 4px;"></i> Week No *
+                                            </label>
+                                            <select id="uploadWeekNo" onchange="checkUploadReady()" disabled
+                                                style="width: 100%; padding: 8px 12px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 14px; background: white; opacity: 0.6;">
+                                                <option value="">Select Week</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    ` : ''}
 
                 <div style="border: 2px dashed #d1d5db; border-radius: 12px; padding: 2rem; text-align: center; background: #f9fafb; transition: all 0.3s ease;" 
                     id="dropZone" onmouseover="this.style.borderColor='#16a34a'; this.style.background='#f0fdf4';" 
@@ -1008,73 +1008,88 @@
         function onUploadCropYearChange(select) {
             const cropYear = select.value;
             const weekSelect = document.getElementById('uploadWeekNo');
+            const uploadHint = document.getElementById('uploadHint');
 
             if (!cropYear) {
                 weekSelect.innerHTML = '<option value="">Select Week</option>';
                 weekSelect.disabled = true;
                 weekSelect.style.opacity = '0.6';
-                checkUploadReady();
                 return;
             }
 
-            weekSelect.innerHTML = '<option value="">Loading weeks...</option>';
-            weekSelect.disabled = true;
+            weekSelect.disabled = false;
+            weekSelect.style.opacity = '1';
 
-            // Fetch weeks from week_no table for the selected crop year
-            fetch(`/get-weeks-by-crop-year?crop_year=${encodeURIComponent(cropYear)}`, {
+            // Fetch weeks from WeekNo model - already sorted
+            fetch('/get-weeks?crop_year=' + cropYear, {
                     headers: {
                         'Accept': 'application/json',
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
                     }
                 })
-                .then(r => r.json())
+                .then(response => response.json())
                 .then(data => {
-                    const weeks = data.weeks || [];
+                    let weeks = data.weeks || [];
+
+                    // Sort numerically
+                    weeks.sort((a, b) => parseInt(a) - parseInt(b));
+
                     weekSelect.innerHTML = '<option value="">Select Week</option>';
-                    if (weeks.length === 0) {
-                        weekSelect.innerHTML += '<option value="" disabled>No weeks found for this crop year</option>';
-                    } else {
-                        weeks.forEach(w => {
-                            weekSelect.innerHTML +=
-                                `<option value="${w.week_no}">Week ${w.week_no}</option>`;
-                        });
-                    }
-                    weekSelect.disabled = false;
-                    weekSelect.style.opacity = '1';
+                    weeks.forEach(week => {
+                        weekSelect.innerHTML += `<option value="${week}">Week ${week}</option>`;
+                    });
                     checkUploadReady();
                 })
-                .catch(() => {
+                .catch(error => {
+                    console.error('Error fetching weeks:', error);
                     weekSelect.innerHTML = '<option value="">Error loading weeks</option>';
                 });
         }
 
         // Check if all required fields are filled
         function checkUploadReady() {
+            const confirmBtn = Swal.getConfirmButton();
+            if (!confirmBtn) return;
+
+            const cropYear = document.getElementById('uploadCropYear')?.value;
+            const weekNo = document.getElementById('uploadWeekNo')?.value;
             const fileInput = document.getElementById('csvFileInput');
-            const cropYearSelect = document.getElementById('uploadCropYear');
-            const weekSelect = document.getElementById('uploadWeekNo');
-            const hint = document.getElementById('uploadHint');
-
             const hasFile = fileInput && fileInput.files.length > 0;
-            const needsCropWeek = cropYearSelect !== null;
 
-            let ready = hasFile;
+            // Check if current modal type needs crop/week
+            const needsCropWeek = ['summary', 'trucking', 'fci', 'fuel', 'rentals', 'underload', 'transloading', 'mudpress',
+                'quedan', 'molasses', 'consolidated'
+            ];
+            const currentType = document.querySelector('.swal2-title')?.textContent?.toLowerCase() || '';
 
-            if (needsCropWeek) {
-                const hasCropYear = cropYearSelect && cropYearSelect.value;
-                const hasWeek = weekSelect && weekSelect.value && !weekSelect.disabled;
-                ready = hasFile && hasCropYear && hasWeek;
-
-                if (hint) {
-                    hint.style.display = ready ? 'none' : 'block';
+            let typeNeedsCropWeek = false;
+            for (const t of needsCropWeek) {
+                if (currentType.includes(t)) {
+                    typeNeedsCropWeek = true;
+                    break;
                 }
             }
 
-            const confirmBtn = Swal.getConfirmButton();
-            if (confirmBtn) {
-                confirmBtn.disabled = !ready;
-                confirmBtn.style.opacity = ready ? '1' : '0.5';
-                confirmBtn.style.cursor = ready ? 'pointer' : 'not-allowed';
+            if (typeNeedsCropWeek) {
+                if (cropYear && weekNo && hasFile) {
+                    confirmBtn.disabled = false;
+                    confirmBtn.style.opacity = '1';
+                    confirmBtn.style.cursor = 'pointer';
+                } else {
+                    confirmBtn.disabled = true;
+                    confirmBtn.style.opacity = '0.5';
+                    confirmBtn.style.cursor = 'not-allowed';
+                }
+            } else {
+                if (hasFile) {
+                    confirmBtn.disabled = false;
+                    confirmBtn.style.opacity = '1';
+                    confirmBtn.style.cursor = 'pointer';
+                } else {
+                    confirmBtn.disabled = true;
+                    confirmBtn.style.opacity = '0.5';
+                    confirmBtn.style.cursor = 'not-allowed';
+                }
             }
         }
 

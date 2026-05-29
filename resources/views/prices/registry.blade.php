@@ -34,7 +34,7 @@
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-3">
                     <input type="text" x-model="quedanSearch" @input="quedanCurrentPage = 1"
-                        placeholder="Search quedan..." class="border border-gray-200 rounded-xl px-3 py-2 text-sm w-64">
+                        placeholder="Search quedan or planter name..." class="border border-gray-200 rounded-xl px-3 py-2 text-sm w-64">
                     <span class="text-xs text-gray-500" x-text="'Showing ' + filteredQuedans.length + ' records'"></span>
                 </div>
                 <div class="flex items-center gap-2">
@@ -392,7 +392,7 @@
 
                     // Quedan data
                     quedanSearch: '',
-                    quedanSortField: 'planter_name',
+                    quedanSortField: 'null',
                     quedanSortDir: 'asc',
                     quedanCurrentPage: 1,
                     quedanSelectedIds: [],
@@ -401,7 +401,7 @@
 
                     // Molasses data
                     molassesSearch: '',
-                    molassesSortField: 'planter_name',
+                    molassesSortField: 'null',
                     molassesSortDir: 'asc',
                     molassesCurrentPage: 1,
                     molassesSelectedIds: [],
@@ -497,17 +497,20 @@
                             data = data.filter(d => (d.planter_name || '').toLowerCase().includes(s) || (d.planter_code ||
                                 '').toLowerCase().includes(s) || (d.qdn_no || '').toLowerCase().includes(s));
                         }
-                        data.sort((a, b) => {
-                            let valA = a[this.quedanSortField] ?? '',
-                                valB = b[this.quedanSortField] ?? '';
-                            if (typeof valA === 'string') valA = valA.toLowerCase();
-                            if (typeof valB === 'string') valB = valB.toLowerCase();
-                            if (!isNaN(valA)) valA = parseFloat(valA);
-                            if (!isNaN(valB)) valB = parseFloat(valB);
-                            if (valA < valB) return this.quedanSortDir === 'asc' ? -1 : 1;
-                            if (valA > valB) return this.quedanSortDir === 'asc' ? 1 : -1;
-                            return 0;
-                        });
+                        // Only sort if user has clicked a column header
+                        if (this.quedanSortField) {
+                            data.sort((a, b) => {
+                                let valA = a[this.quedanSortField] ?? '',
+                                    valB = b[this.quedanSortField] ?? '';
+                                if (typeof valA === 'string') valA = valA.toLowerCase();
+                                if (typeof valB === 'string') valB = valB.toLowerCase();
+                                if (!isNaN(valA) && valA !== '') valA = parseFloat(valA);
+                                if (!isNaN(valB) && valB !== '') valB = parseFloat(valB);
+                                if (valA < valB) return this.quedanSortDir === 'asc' ? -1 : 1;
+                                if (valA > valB) return this.quedanSortDir === 'asc' ? 1 : -1;
+                                return 0;
+                            });
+                        }
                         return data;
                     },
                     get paginatedQuedans() {
@@ -539,17 +542,20 @@
                             data = data.filter(d => (d.planter_name || '').toLowerCase().includes(s) || (d.planter_code ||
                                 '').toLowerCase().includes(s));
                         }
-                        data.sort((a, b) => {
-                            let valA = a[this.molassesSortField] ?? '',
-                                valB = b[this.molassesSortField] ?? '';
-                            if (typeof valA === 'string') valA = valA.toLowerCase();
-                            if (typeof valB === 'string') valB = valB.toLowerCase();
-                            if (!isNaN(valA)) valA = parseFloat(valA);
-                            if (!isNaN(valB)) valB = parseFloat(valB);
-                            if (valA < valB) return this.molassesSortDir === 'asc' ? -1 : 1;
-                            if (valA > valB) return this.molassesSortDir === 'asc' ? 1 : -1;
-                            return 0;
-                        });
+                        // Only sort if user has clicked a column header
+                        if (this.molassesSortField) {
+                            data.sort((a, b) => {
+                                let valA = a[this.molassesSortField] ?? '',
+                                    valB = b[this.molassesSortField] ?? '';
+                                if (typeof valA === 'string') valA = valA.toLowerCase();
+                                if (typeof valB === 'string') valB = valB.toLowerCase();
+                                if (!isNaN(valA) && valA !== '') valA = parseFloat(valA);
+                                if (!isNaN(valB) && valB !== '') valB = parseFloat(valB);
+                                if (valA < valB) return this.molassesSortDir === 'asc' ? -1 : 1;
+                                if (valA > valB) return this.molassesSortDir === 'asc' ? 1 : -1;
+                                return 0;
+                            });
+                        }
                         return data;
                     },
                     get paginatedMolasses() {

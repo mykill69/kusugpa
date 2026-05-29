@@ -123,8 +123,16 @@ class PriceController extends Controller
 
     public function registry()
 {
-    $quedans = Quedan::orderBy('planter_name')->get();
-    $molassesList = Molass::orderBy('planter_name')->get();
+    $quedans = Quedan::orderBy('crop_year', 'desc')
+    ->orderByRaw('CAST(week_no AS UNSIGNED) DESC')
+    ->orderBy('planter_name', 'asc')
+    ->get();
+    
+    $molassesList = Molass::orderBy('crop_year', 'desc')
+    ->orderByRaw('CAST(week_no AS UNSIGNED) DESC')
+    ->orderBy('planter_name', 'asc')
+    ->get();
+    
     $cropYears = CropYear::orderBy('crop_year')->pluck('crop_year');
     
     return view('prices.registry', compact('quedans', 'molassesList', 'cropYears'));
@@ -137,9 +145,13 @@ public function registryData(Request $request)
     $weekNo = $request->get('week_no');
     
     if ($type === 'quedan') {
-        $query = Quedan::orderBy('planter_name');
+        $query = Quedan::orderBy('crop_year', 'desc')
+            ->orderByRaw('CAST(week_no AS UNSIGNED) DESC')
+            ->orderBy('planter_name', 'asc');
     } else {
-        $query = Molass::orderBy('planter_name');
+        $query = Molass::orderBy('crop_year', 'desc')
+            ->orderByRaw('CAST(week_no AS UNSIGNED) DESC')
+            ->orderBy('planter_name', 'asc');
     }
     
     if ($cropYear) {
@@ -154,9 +166,17 @@ public function registryData(Request $request)
     
     if ($cropYear) {
         if ($type === 'quedan') {
-            $weeks = Quedan::where('crop_year', $cropYear)->select('week_no')->distinct()->orderBy('week_no')->pluck('week_no');
+            $weeks = Quedan::where('crop_year', $cropYear)
+                ->select('week_no')
+                ->distinct()
+                ->orderByRaw('CAST(week_no AS UNSIGNED) DESC')
+                ->pluck('week_no');
         } else {
-            $weeks = Molass::where('crop_year', $cropYear)->select('week_no')->distinct()->orderBy('week_no')->pluck('week_no');
+            $weeks = Molass::where('crop_year', $cropYear)
+                ->select('week_no')
+                ->distinct()
+                ->orderByRaw('CAST(week_no AS UNSIGNED) DESC')
+                ->pluck('week_no');
         }
     }
     
@@ -260,17 +280,17 @@ public function getRegistryFilters(Request $request)
     $cropYears = $model::select('crop_year')->distinct()->orderBy('crop_year')->pluck('crop_year');
     
     $weeksData = $model::select('crop_year', 'week_no', DB::raw('COUNT(*) as count'))
-        ->groupBy('crop_year', 'week_no')
-        ->orderBy('crop_year')
-        ->orderBy('week_no')
-        ->get()
-        ->map(function($item) {
-            return [
-                'crop_year' => $item->crop_year,
-                'week_no' => $item->week_no,
-                'count' => $item->count
-            ];
-        });
+    ->groupBy('crop_year', 'week_no')
+    ->orderBy('crop_year', 'desc')
+    ->orderByRaw('CAST(week_no AS UNSIGNED) DESC')
+    ->get()
+    ->map(function($item) {
+        return [
+            'crop_year' => $item->crop_year,
+            'week_no' => $item->week_no,
+            'count' => $item->count
+        ];
+    });
     
     return response()->json([
         'crop_years' => $cropYears,
