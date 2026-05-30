@@ -17,6 +17,7 @@ use App\Models\SystemSetting;
 use App\Models\LoanSetting;
 use App\Models\TruckingAllowance;
 use App\Models\AuditLog;
+use App\Models\PlanterProfile;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -594,69 +595,41 @@ public function voucherPDF(Request $request)
     ])->stream('voucher-preview.pdf');
 }
 
-    public function dashboardData(Request $request)
+ public function dashboardData(Request $request)
 {
-    // Get filter parameters from request
     $filterCropYear = $request->get('crop_year');
     $filterWeekNo = $request->get('week_no');
     
     $allCropYears = CropYear::orderBy('crop_year')->pluck('crop_year');
-    
-    // Use filtered crop year or default
-    $currentCropYear = $filterCropYear ?? Summary::orderBy('crop_year', 'desc')->value('crop_year');
+    $currentCropYear = $filterCropYear ?? ConsolidatedUpload::orderBy('crop_year', 'desc')->value('crop_year');
     
     if (!$currentCropYear) {
         $currentCropYear = $allCropYears->last() ?? '20232024';
     }
     
-    // Build base query with optional week filter
-    $summaryQuery = Summary::where('crop_year', $currentCropYear);
-    
+    $consolidatedQuery = ConsolidatedUpload::where('crop_year', $currentCropYear);
     if ($filterWeekNo) {
-        $summaryQuery->where('week_no', $filterWeekNo);
+        $consolidatedQuery->where('week_no', $filterWeekNo);
     }
     
-    // Calculate totals based on filters - only for the selected crop year
-    $totalNetCane = (clone $summaryQuery)->sum(DB::raw('CAST(net_cane AS DECIMAL(12,3))'));
-    $totalNetAmount = (clone $summaryQuery)->sum(DB::raw('CAST(net_amount AS DECIMAL(12,2))'));
+    $totalTAWT = (clone $consolidatedQuery)->sum(DB::raw('CAST(ta_wt AS DECIMAL(12,3))'));
+    $totalSummary = (clone $consolidatedQuery)->sum(DB::raw('CAST(total_summary AS DECIMAL(12,2))'));
+    $activePlantersCount = (clone $consolidatedQuery)->distinct('planter_code')->count('planter_code');
     
-    // Count planters based on filters - ONLY for selected crop year and week!
-    $activePlantersCount = (clone $summaryQuery)->distinct('planter_code')->count('planter_code');
+    $totalPlanters = PlanterProfile::where('status', 'active')->distinct('planter_code')->count('planter_code');
     
-    // Total planters should also be filtered by crop year and week!
-    $totalPlantersQuery = Summary::query();
-    if ($filterCropYear) {
-        $totalPlantersQuery->where('crop_year', $filterCropYear);
-    }
-    if ($filterWeekNo) {
-        $totalPlantersQuery->where('week_no', $filterWeekNo);
-    }
-    $totalPlanters = $totalPlantersQuery->distinct('planter_code')->count('planter_code');
+    $previousCropYear = ConsolidatedUpload::where('crop_year', '<', $currentCropYear)
+        ->orderBy('crop_year', 'desc')->value('crop_year');
     
-    // Previous year comparison
-    $previousCropYear = Summary::where('crop_year', '<', $currentCropYear)
-        ->orderBy('crop_year', 'desc')
-        ->value('crop_year');
+    $previousYearQuery = ConsolidatedUpload::where('crop_year', $previousCropYear);
+    if ($filterWeekNo) $previousYearQuery->where('week_no', $filterWeekNo);
+    $lastYearTAWT = $previousCropYear ? (clone $previousYearQuery)->sum(DB::raw('CAST(ta_wt AS DECIMAL(12,3))')) : 0;
     
-    $previousYearQuery = Summary::where('crop_year', $previousCropYear);
-    if ($filterWeekNo) {
-        $previousYearQuery->where('week_no', $filterWeekNo);
-    }
+    $caneChange = $lastYearTAWT > 0 ? (($totalTAWT - $lastYearTAWT) / $lastYearTAWT) * 100 : 0;
+    $maxWeek = ConsolidatedUpload::where('crop_year', $currentCropYear)->max('week_no') ?? 0;
     
-    $lastYearData = $previousCropYear ? (clone $previousYearQuery)->sum(DB::raw('CAST(net_cane AS DECIMAL(12,3))')) : 0;
-    
-    $caneChange = 0;
-    if ($lastYearData > 0) {
-        $caneChange = (($totalNetCane - $lastYearData) / $lastYearData) * 100;
-    }
-    
-    // Get current week for THE SELECTED crop year
-    $maxWeek = Summary::where('crop_year', $currentCropYear)->max('week_no') ?? 0;
-    
-    // Get prices - filter by crop year and week
     $quedanPriceQuery = QuedanPrice::orderBy('created_at', 'desc');
     $molassesPriceQuery = MolassesPrice::orderBy('created_at', 'desc');
-    
     if ($filterCropYear) {
         $quedanPriceQuery->where('crop_year', $filterCropYear);
         $molassesPriceQuery->where('crop_year', $filterCropYear);
@@ -672,169 +645,160 @@ public function voucherPDF(Request $request)
     $quedanPrice = $latestQuedan ? (float) $latestQuedan->quedan_price : 0;
     $quedanType = $latestQuedan ? $latestQuedan->quedan_type : 'N/A';
     $quedanTime = $latestQuedan ? $latestQuedan->created_at->diffForHumans() : 'No data';
-    
     $molassesPrice = $latestMolasses ? (float) $latestMolasses->mol_price : 0;
     $molassesTime = $latestMolasses ? $latestMolasses->created_at->diffForHumans() : 'No data';
     
-    // Yearly production data
     $yearlyLabels = [];
     $yearlyData = [];
-    
     foreach ($allCropYears as $cropYear) {
         $yearlyLabels[] = $cropYear;
-        $yearSummaryQuery = Summary::where('crop_year', $cropYear);
-        if ($filterWeekNo) {
-            $yearSummaryQuery->where('week_no', $filterWeekNo);
-        }
-        $total = $yearSummaryQuery->sum(DB::raw('CAST(net_cane AS DECIMAL(12,3))'));
-        $yearlyData[] = (float) $total;
+        $yQuery = ConsolidatedUpload::where('crop_year', $cropYear);
+        if ($filterWeekNo) $yQuery->where('week_no', $filterWeekNo);
+        $yearlyData[] = (float) $yQuery->sum(DB::raw('CAST(ta_wt AS DECIMAL(12,3))'));
     }
     
-    // Weekly data for selected crop year
     $weeklyData = $this->getWeeklyData($currentCropYear);
-    
-    // Top planters based on filters
     $topPlanters = $this->getTopPlanters($currentCropYear, $filterWeekNo);
-    
-    // Recent prices
     $recentPrices = $this->getRecentPrices($filterCropYear, $filterWeekNo);
-
-    // After recentPrices, add:
-    $alerts = $this->getAlerts($currentCropYear, $totalNetCane, $totalNetAmount, $activePlantersCount);
-    $recommendations = $this->getRecommendations($currentCropYear, $totalNetCane, $maxWeek);
+    $alerts = $this->getAlerts($currentCropYear, $totalTAWT, $totalSummary, $activePlantersCount);
     $riskPlanters = $this->getRiskPlanters($currentCropYear);
     $loanStats = $this->getLoanStatsOverview();
-    $monthlyData = $this->getMonthlyAverageData($currentCropYear);
     
-    // Activities
-    $activities = $this->getActivities(
-        $currentCropYear, 
-        $filterWeekNo, 
-        $quedanPrice, 
-        $quedanType, 
-        $molassesPrice, 
-        $activePlantersCount, 
-        $totalPlanters, 
-        $maxWeek, 
-        $quedanTime, 
-        $molassesTime
-    );
+    $activities = $this->getActivities($currentCropYear, $filterWeekNo, $quedanPrice, $quedanType, 
+        $molassesPrice, $activePlantersCount, $totalPlanters, $maxWeek, $quedanTime, $molassesTime);
     
     return response()->json([
-    'stats' => [
-        'totalNetCane' => (float) $totalNetCane,
-        'totalNetAmount' => (float) $totalNetAmount,
-        'activePlanters' => $activePlantersCount,
-        'totalPlanters' => $totalPlanters,
-        'currentCropYear' => $currentCropYear,
-        'currentWeek' => (int) $maxWeek,
-        'caneChange' => round($caneChange, 1),
-        'amountChange' => 12.5,
-        'quedanPrice' => $quedanPrice,
-        'quedanType' => $quedanType,
-        'molassesPrice' => $molassesPrice,
-        'activeLoans' => \App\Models\Loan::where('status', 'active')->count(),
-        'totalLoanAmount' => \App\Models\Loan::whereIn('status', ['active', 'approved'])->sum('principal_amount'),
-        'totalMolasses' => 0,
-        // NEW STATS
-        'averageYield' => $activePlantersCount > 0 ? round($totalNetCane / $activePlantersCount, 2) : 0,
-        'bestWeek' => (int) $maxWeek,
-        'bestWeekCane' => (float) Summary::where('crop_year', $currentCropYear)->where('week_no', $maxWeek)->sum('net_cane'),
-        'collectionRate' => $this->getLoanCollectionRate(),
-        'riskPlanters' => count($riskPlanters),
-        'pendingApprovals' => \App\Models\Loan::where('status', 'pending')->count(),
-    ],
-    'yearlyData' => [
-        'labels' => $yearlyLabels,
-        'datasets' => [['data' => $yearlyData]]
-    ],
-    'weeklyData' => $weeklyData,
-    'monthlyData' => $monthlyData,        // NEW
-    'activities' => $activities,
-    'topPlanters' => $topPlanters,
-    'recentPrices' => $recentPrices,
-    'availableYears' => $allCropYears->values(),
-    'alerts' => $alerts,                  // NEW
-    'recommendations' => $recommendations, // NEW
-    'riskPlanters' => $riskPlanters,      // NEW
-    'loanStats' => $loanStats,            // NEW
-    'distributionData' => $this->getDistributionData($currentCropYear, $filterWeekNo),
-    
-]);
-
+        'stats' => [
+            'totalNetCane' => (float) $totalTAWT,
+            'totalNetAmount' => (float) $totalSummary,
+            'activePlanters' => $activePlantersCount,
+            'totalPlanters' => $totalPlanters,
+            'currentCropYear' => $currentCropYear,
+            'currentWeek' => (int) $maxWeek,
+            'caneChange' => round($caneChange, 1),
+            'amountChange' => 12.5,
+            'quedanPrice' => $quedanPrice,
+            'quedanType' => $quedanType,
+            'molassesPrice' => $molassesPrice,
+            'activeLoans' => \App\Models\Loan::where('status', 'active')->count(),
+            'totalLoanAmount' => \App\Models\Loan::whereIn('status', ['active', 'approved'])->sum('principal_amount'),
+            'totalMolasses' => 0,
+            'averageYield' => $activePlantersCount > 0 ? round($totalTAWT / $activePlantersCount, 2) : 0,
+            'bestWeek' => (int) $maxWeek,
+            'bestWeekCane' => (float) ConsolidatedUpload::where('crop_year', $currentCropYear)->where('week_no', $maxWeek)->sum('ta_wt'),
+            'collectionRate' => $this->getLoanCollectionRate(),
+            'riskPlanters' => count($riskPlanters),
+            'pendingApprovals' => \App\Models\Loan::where('status', 'pending')->count(),
+        ],
+        'yearlyData' => ['labels' => $yearlyLabels, 'datasets' => [['data' => $yearlyData]]],
+        'weeklyData' => $weeklyData,
+        'monthlyData' => $this->getMonthlyAverageData($currentCropYear),
+        'activities' => $activities,
+        'topPlanters' => $topPlanters,
+        'recentPrices' => $recentPrices,
+        'availableYears' => $allCropYears->values(),
+        'alerts' => $alerts,
+        'recommendations' => $this->getRecommendations($currentCropYear, $totalTAWT, $maxWeek),
+        'riskPlanters' => $riskPlanters,
+        'loanStats' => $loanStats,
+        'distributionData' => $this->getDistributionData($currentCropYear, $filterWeekNo),
+    ]);
 }
 
-private function getAlerts($cropYear, $totalCane, $totalAmount, $activePlanters)
+private function getWeeklyData($cropYear)
 {
-    $alerts = [];
-    
-    if ($totalCane == 0) {
-        $alerts[] = [
-            'type' => 'warning',
-            'title' => 'No Production Data',
-            'message' => 'No production records found for ' . $cropYear . '. Upload weekly summaries.',
-        ];
+    $weeks = ConsolidatedUpload::where('crop_year', $cropYear)
+        ->select('week_no', DB::raw('SUM(CAST(ta_wt AS DECIMAL(12,3))) as total_cane'))
+        ->groupBy('week_no')
+        ->orderByRaw('CAST(week_no AS UNSIGNED) ASC')
+        ->limit(52)
+        ->get();
+
+    $labels = [];
+    $data = [];
+    foreach ($weeks as $item) {
+        $labels[] = 'Week ' . $item->week_no;
+        $data[] = (float) $item->total_cane;
     }
+
+    return ['labels' => $labels, 'datasets' => [['data' => $data]]];
+}
+
+private function getTopPlanters($cropYear, $weekNo = null)
+{
+    $query = ConsolidatedUpload::where('crop_year', $cropYear)
+        ->select(
+            'planter_code',
+            'planter_name',
+            DB::raw('SUM(CAST(ta_wt AS DECIMAL(12,3))) as total_cane'),
+            DB::raw('SUM(CAST(total_summary AS DECIMAL(12,2))) as total_amount')
+        )
+        ->groupBy('planter_code', 'planter_name')
+        ->orderByDesc('total_amount');
     
-    $pendingLoans = \App\Models\Loan::where('status', 'pending')->count();
-    if ($pendingLoans > 0) {
-        $alerts[] = [
-            'type' => 'info',
-            'title' => 'Pending Loan Approvals',
-            'message' => $pendingLoans . ' loan application(s) awaiting approval.',
+    if ($weekNo) $query->where('week_no', $weekNo);
+
+    return $query->limit(10)->get()->map(function($p) {
+        return [
+            'planter_code' => $p->planter_code,
+            'planter_name' => $p->planter_name,
+            'total_cane' => (float) $p->total_cane,
+            'total_amount' => (float) $p->total_amount,
         ];
-    }
-    
-    $overduePayments = \App\Models\LoanAmortization::where('status', 'overdue')->count();
-    if ($overduePayments > 0) {
-        $alerts[] = [
-            'type' => 'danger',
-            'title' => 'Overdue Loan Payments',
-            'message' => $overduePayments . ' overdue amortization(s) require attention.',
-        ];
-    }
-    
-    $noPriceSet = !QuedanPrice::where('crop_year', $cropYear)->exists();
-    if ($noPriceSet) {
-        $alerts[] = [
-            'type' => 'warning',
-            'title' => 'Quedan Price Not Set',
-            'message' => 'No quedan price configured for ' . $cropYear . '.',
-        ];
-    }
-    
-    return $alerts;
+    })->values()->toArray();
+}
+
+private function getRiskPlanters($cropYear)
+{
+    return ConsolidatedUpload::where('crop_year', $cropYear)
+        ->select('planter_code', 'planter_name', DB::raw('SUM(CAST(ta_wt AS DECIMAL(12,3))) as total_cane'))
+        ->groupBy('planter_code', 'planter_name')
+        ->having('total_cane', '<', 5)
+        ->orderBy('total_cane')
+        ->limit(10)
+        ->get()
+        ->map(function($p) {
+            return [
+                'planter_code' => $p->planter_code,
+                'planter_name' => $p->planter_name,
+                'total_cane' => (float) $p->total_cane,
+            ];
+        })
+        ->values()
+        ->toArray();
 }
 
 private function getDistributionData($cropYear, $weekNo = null)
 {
-    $query = Summary::where('crop_year', $cropYear);
-    if ($weekNo) {
-        $query->where('week_no', $weekNo);
+    $query = ConsolidatedUpload::where('crop_year', $cropYear);
+    if ($weekNo) $query->where('week_no', $weekNo);
+    
+    $grandTotal = (clone $query)->sum(DB::raw('CAST(ta_wt AS DECIMAL(12,3))'));
+    
+    if ($grandTotal <= 0) {
+        return [
+            'labels' => ['No Data'],
+            'datasets' => [['data' => [1], 'backgroundColor' => ['#e5e7eb']]]
+        ];
     }
     
-    // Get top 5 planters
     $top5 = (clone $query)
-        ->selectRaw('planter_name, SUM(CAST(net_cane AS DECIMAL(12,3))) as total_cane')
+        ->select('planter_name', DB::raw('SUM(CAST(ta_wt AS DECIMAL(12,3))) as total_cane'))
         ->groupBy('planter_name')
         ->orderByDesc('total_cane')
         ->limit(5)
         ->get();
     
-    // Get total for "Others"
     $top5Total = $top5->sum('total_cane');
-    $grandTotal = (clone $query)->sum(DB::raw('CAST(net_cane AS DECIMAL(12,3))'));
     $othersTotal = $grandTotal - $top5Total;
     
     $labels = [];
     $data = [];
     $colors = ['#22c55e', '#3b82f6', '#a855f7', '#f59e0b', '#ef4444', '#94a3b8'];
     
-    $i = 0;
     foreach ($top5 as $t) {
         $labels[] = $t->planter_name;
         $data[] = (float) $t->total_cane;
-        $i++;
     }
     
     if ($othersTotal > 0) {
@@ -844,11 +808,33 @@ private function getDistributionData($cropYear, $weekNo = null)
     
     return [
         'labels' => $labels,
-        'datasets' => [[
-            'data' => $data,
-            'backgroundColor' => array_slice($colors, 0, count($labels)),
-        ]]
+        'datasets' => [['data' => $data, 'backgroundColor' => array_slice($colors, 0, count($labels))]]
     ];
+}
+
+private function getAlerts($cropYear, $totalCane, $totalAmount, $activePlanters)
+{
+    $alerts = [];
+    
+    if ($totalCane == 0) {
+        $alerts[] = ['type' => 'warning', 'title' => 'No Production Data', 'message' => 'No production records found for ' . $cropYear . '. Upload weekly summaries.'];
+    }
+    
+    $pendingLoans = \App\Models\Loan::where('status', 'pending')->count();
+    if ($pendingLoans > 0) {
+        $alerts[] = ['type' => 'info', 'title' => 'Pending Loan Approvals', 'message' => $pendingLoans . ' loan application(s) awaiting approval.'];
+    }
+    
+    $overduePayments = \App\Models\LoanAmortization::where('status', 'overdue')->count();
+    if ($overduePayments > 0) {
+        $alerts[] = ['type' => 'danger', 'title' => 'Overdue Loan Payments', 'message' => $overduePayments . ' overdue amortization(s) require attention.'];
+    }
+    
+    if (!QuedanPrice::where('crop_year', $cropYear)->exists()) {
+        $alerts[] = ['type' => 'warning', 'title' => 'Quedan Price Not Set', 'message' => 'No quedan price configured for ' . $cropYear . '.'];
+    }
+    
+    return $alerts;
 }
 
 private function getRecommendations($cropYear, $totalCane, $maxWeek)
@@ -856,44 +842,21 @@ private function getRecommendations($cropYear, $totalCane, $maxWeek)
     $recommendations = [];
     
     if ($totalCane == 0) {
-        $recommendations[] = [
-            'icon' => 'fas fa-upload',
-            'message' => 'Upload weekly summary data to start tracking production metrics.',
-        ];
+        $recommendations[] = ['icon' => 'fas fa-upload', 'message' => 'Upload weekly summary data to start tracking production metrics.'];
     }
     
     if ($maxWeek > 0 && $maxWeek < 22) {
-        $recommendations[] = [
-            'icon' => 'fas fa-calendar-check',
-            'message' => 'You are in Week ' . $maxWeek . '. Keep uploads current for accurate reporting.',
-        ];
+        $recommendations[] = ['icon' => 'fas fa-calendar-check', 'message' => 'You are in Week ' . $maxWeek . '. Keep uploads current for accurate reporting.'];
     }
     
     $inactivePlanters = \App\Models\PlanterProfile::where('status', '!=', 'active')->count();
     if ($inactivePlanters > 0) {
-        $recommendations[] = [
-            'icon' => 'fas fa-user-check',
-            'message' => $inactivePlanters . ' inactive planters. Review and update their status.',
-        ];
+        $recommendations[] = ['icon' => 'fas fa-user-check', 'message' => $inactivePlanters . ' inactive planters. Review and update their status.'];
     }
     
-    $recommendations[] = [
-        'icon' => 'fas fa-chart-line',
-        'message' => 'Compare production with previous crop year to identify trends.',
-    ];
+    $recommendations[] = ['icon' => 'fas fa-chart-line', 'message' => 'Compare production with previous crop year to identify trends.'];
     
     return $recommendations;
-}
-
-private function getRiskPlanters($cropYear)
-{
-    return Summary::where('crop_year', $cropYear)
-        ->selectRaw('planter_code, planter_name, SUM(CAST(net_cane AS DECIMAL(12,3))) as total_cane')
-        ->groupBy('planter_code', 'planter_name')
-        ->having('total_cane', '<', 5)
-        ->orderBy('total_cane')
-        ->limit(5)
-        ->get();
 }
 
 private function getLoanStatsOverview()
@@ -924,66 +887,46 @@ private function getLoanCollectionRate()
 private function getMonthlyAverageData($cropYear)
 {
     $months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    $monthlyData = [];
+    $monthlyData = array_fill(0, 12, 0);
     
-    foreach (range(1, 12) as $month) {
-        $avg = Summary::where('crop_year', $cropYear)
-            ->whereMonth('created_at', $month)
-            ->avg(DB::raw('CAST(net_cane AS DECIMAL(12,3))'));
-        $monthlyData[] = round($avg ?? 0, 2);
-    }
-    
-    return [
-        'labels' => $months,
-        'datasets' => [['data' => $monthlyData]]
+    $weekMonthMap = [
+        1 => 0, 2 => 0, 3 => 0, 4 => 0,
+        5 => 1, 6 => 1, 7 => 1, 8 => 1,
+        9 => 2, 10 => 2, 11 => 2, 12 => 2, 13 => 2,
+        14 => 3, 15 => 3, 16 => 3, 17 => 3,
+        18 => 4, 19 => 4, 20 => 4, 21 => 4,
+        22 => 5, 23 => 5, 24 => 5, 25 => 5, 26 => 5,
+        27 => 6, 28 => 6, 29 => 6, 30 => 6,
+        31 => 7, 32 => 7, 33 => 7, 34 => 7, 35 => 7,
+        36 => 8, 37 => 8, 38 => 8, 39 => 8,
+        40 => 9, 41 => 9, 42 => 9, 43 => 9,
+        44 => 10, 45 => 10, 46 => 10, 47 => 10, 48 => 10,
+        49 => 11, 50 => 11, 51 => 11, 52 => 11,
     ];
-}
-
-private function getTopPlanters($cropYear, $weekNo = null)
-{
-    $query = Summary::where('crop_year', $cropYear);
     
-    if ($weekNo) {
-        $query->where('week_no', $weekNo);
-    }
-    
-    $planters = $query
-        ->selectRaw('planter_code, planter_name, SUM(CAST(net_cane AS DECIMAL(12,3))) as total_cane, SUM(CAST(net_amount AS DECIMAL(12,2))) as total_amount')
-        ->groupBy('planter_code', 'planter_name')
-        ->orderByDesc('total_cane') // Order by cane instead of amount for better representation
-        ->limit(5)
-        ->get();
-    
-    // Don't fall back to all data if empty - return empty collection
-    // This ensures 20252026 shows blank when there's no data
-    
-    return $planters;
-}
-
-private function getWeeklyData($cropYear)
-{
-    $weeklySummaries = Summary::where('crop_year', $cropYear)
-        ->selectRaw('week_no, SUM(CAST(net_cane AS DECIMAL(12,3))) as total_cane')
+    $weeklyData = ConsolidatedUpload::where('crop_year', $cropYear)
+        ->select('week_no', DB::raw('AVG(CAST(ta_wt AS DECIMAL(12,3))) as avg_ta_wt'))
         ->groupBy('week_no')
-        ->orderBy('week_no')
-        ->limit(52)
         ->get();
     
-    $labels = [];
-    $data = [];
+    $monthCounts = array_fill(0, 12, 0);
     
-    foreach ($weeklySummaries as $item) {
-        $labels[] = 'Week ' . $item->week_no;
-        $data[] = (float) $item->total_cane;
+    foreach ($weeklyData as $week) {
+        $weekNo = (int) $week->week_no;
+        if (isset($weekMonthMap[$weekNo])) {
+            $monthIndex = $weekMonthMap[$weekNo];
+            $monthlyData[$monthIndex] += (float) $week->avg_ta_wt;
+            $monthCounts[$monthIndex]++;
+        }
     }
     
-    // If no data for this crop year, return empty arrays
-    // Remove the fallback data that was here before
+    foreach ($monthlyData as $i => $total) {
+        if ($monthCounts[$i] > 0) {
+            $monthlyData[$i] = round($total / $monthCounts[$i], 2);
+        }
+    }
     
-    return [
-        'labels' => $labels,
-        'datasets' => [['data' => $data]]
-    ];
+    return ['labels' => $months, 'datasets' => [['data' => $monthlyData]]];
 }
 
 private function getActivities($cropYear, $weekNo, $quedanPrice, $quedanType, $molassesPrice, $activePlanters, $totalPlanters, $maxWeek, $quedanTime, $molassesTime)

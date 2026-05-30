@@ -205,10 +205,10 @@
                         <h3 class="text-lg font-bold text-gray-900">Weekly Trend</h3>
                         <p class="text-xs text-gray-500 mt-0.5">Production trend per week</p>
                     </div>
-                    <div class="bg-blue-50 rounded-lg px-3 py-1.5">
+                    {{-- <div class="bg-blue-50 rounded-lg px-3 py-1.5">
                         <span class="text-xs font-semibold text-blue-700">Week <span
                                 x-text="stats.currentWeek"></span></span>
-                    </div>
+                    </div> --}}
                 </div>
                 <div class="relative w-full" style="height: 320px;">
                     <canvas id="weeklyChart"></canvas>
@@ -260,24 +260,6 @@
                 </div>
             </div>
         </div>
-
-        <!-- Recommendations -->
-        {{-- <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-            <h3 class="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
-                <i class="fas fa-lightbulb text-yellow-500"></i> Recommendations
-            </h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <template x-for="rec in recommendations" :key="rec.message">
-                    <div class="flex items-start gap-3 p-3 bg-primary-50 rounded-xl">
-                        <i :class="rec.icon + ' text-primary-600 mt-0.5'"></i>
-                        <p class="text-sm text-gray-700" x-text="rec.message"></p>
-                    </div>
-                </template>
-            </div>
-        </div> --}}
-
-
-
 
         <!-- Alerts & Critical Info -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">

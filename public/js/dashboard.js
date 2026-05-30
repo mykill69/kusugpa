@@ -78,256 +78,215 @@ function dashboardData() {
         },
 
         createCharts() {
-            const yCanvas = document.getElementById('yearlyChart');
-            const wCanvas = document.getElementById('weeklyChart');
-            const mCanvas = document.getElementById('monthlyChart');
-            const dCanvas = document.getElementById('distributionChart');
+    const yCanvas = document.getElementById('yearlyChart');
+    const wCanvas = document.getElementById('weeklyChart');
+    const mCanvas = document.getElementById('monthlyChart');
+    const dCanvas = document.getElementById('distributionChart');
+    const lCanvas = document.getElementById('loanChart');
 
-            if (this.yearlyChart) { this.yearlyChart.destroy(); this.yearlyChart = null; }
-            if (this.weeklyChart) { this.weeklyChart.destroy(); this.weeklyChart = null; }
-            if (this.productionChart) { this.productionChart.destroy(); this.productionChart = null; }
-            if (this.distributionChart) { this.distributionChart.destroy(); this.distributionChart = null; }
+    if (this.yearlyChart) { this.yearlyChart.destroy(); this.yearlyChart = null; }
+    if (this.weeklyChart) { this.weeklyChart.destroy(); this.weeklyChart = null; }
+    if (this.productionChart) { this.productionChart.destroy(); this.productionChart = null; }
+    if (this.distributionChart) { this.distributionChart.destroy(); this.distributionChart = null; }
+    if (this.loanChart) { this.loanChart.destroy(); this.loanChart = null; }
 
-            // Yearly Chart
-            if (yCanvas) {
-                const ctx1 = yCanvas.getContext('2d');
-                const gradient1 = ctx1.createLinearGradient(0, 0, 0, 320);
-                gradient1.addColorStop(0, 'rgba(34, 197, 94, 0.3)');
-                gradient1.addColorStop(1, 'rgba(34, 197, 94, 0.02)');
-                this.yearlyChart = new Chart(ctx1, {
-                    type: 'bar',
-                    data: {
-                        labels: this.yearlyData.labels,
-                        datasets: [{
-                            label: 'Net Cane (tons)',
-                            data: this.yearlyData.datasets[0].data,
-                            backgroundColor: gradient1,
-                            borderColor: '#22c55e',
-                            borderWidth: 2,
-                            borderRadius: 8,
-                            borderSkipped: false
-                        }]
-                    },
-                    options: {
-                        responsive: true, maintainAspectRatio: false,
-                        plugins: { legend: { display: false } },
-                        scales: { y: { beginAtZero: true, grid: { color: '#f3f4f6' } }, x: { grid: { display: false } } }
-                    }
-                });
+    // Yearly Chart
+    if (yCanvas) {
+        const ctx1 = yCanvas.getContext('2d');
+        const gradient1 = ctx1.createLinearGradient(0, 0, 0, 320);
+        gradient1.addColorStop(0, 'rgba(34, 197, 94, 0.3)');
+        gradient1.addColorStop(1, 'rgba(34, 197, 94, 0.02)');
+        this.yearlyChart = new Chart(ctx1, {
+            type: 'bar',
+            data: {
+                labels: this.yearlyData.labels,
+                datasets: [{
+                    label: 'Net Cane (tons)',
+                    data: this.yearlyData.datasets[0].data,
+                    backgroundColor: gradient1,
+                    borderColor: '#22c55e',
+                    borderWidth: 2,
+                    borderRadius: 8,
+                    borderSkipped: false
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true, grid: { color: '#f3f4f6' } }, x: { grid: { display: false } } }
             }
+        });
+    }
 
-            // Weekly Chart
-            if (wCanvas) {
-                const ctx2 = wCanvas.getContext('2d');
-                const gradient2 = ctx2.createLinearGradient(0, 0, 0, 320);
-                gradient2.addColorStop(0, 'rgba(59, 130, 246, 0.2)');
-                gradient2.addColorStop(1, 'rgba(59, 130, 246, 0)');
-                this.weeklyChart = new Chart(ctx2, {
-                    type: 'line',
-                    data: {
-                        labels: this.weeklyData.labels,
-                        datasets: [{
-                            label: 'Net Cane (tons)',
-                            data: this.weeklyData.datasets[0].data,
-                            borderColor: '#3b82f6',
-                            backgroundColor: gradient2,
-                            borderWidth: 2.5, tension: 0.4, fill: true,
-                            pointRadius: 5, pointBackgroundColor: '#fff',
-                            pointBorderColor: '#3b82f6', pointBorderWidth: 2.5, pointHoverRadius: 7
-                        }]
-                    },
-                    options: {
-                        responsive: true, maintainAspectRatio: false,
-                        plugins: { legend: { display: false } },
-                        scales: { y: { beginAtZero: true, grid: { color: '#f3f4f6' } }, x: { grid: { display: false } } }
-                    }
-                });
+    // Weekly Chart
+    if (wCanvas) {
+        const ctx2 = wCanvas.getContext('2d');
+        const gradient2 = ctx2.createLinearGradient(0, 0, 0, 320);
+        gradient2.addColorStop(0, 'rgba(59, 130, 246, 0.2)');
+        gradient2.addColorStop(1, 'rgba(59, 130, 246, 0)');
+        this.weeklyChart = new Chart(ctx2, {
+            type: 'line',
+            data: {
+                labels: this.weeklyData.labels,
+                datasets: [{
+                    label: 'Net Cane (tons)',
+                    data: this.weeklyData.datasets[0].data,
+                    borderColor: '#3b82f6',
+                    backgroundColor: gradient2,
+                    borderWidth: 2.5, tension: 0.4, fill: true,
+                    pointRadius: 5, pointBackgroundColor: '#fff',
+                    pointBorderColor: '#3b82f6', pointBorderWidth: 2.5, pointHoverRadius: 7
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true, grid: { color: '#f3f4f6' } }, x: { grid: { display: false } } }
             }
-           // In createCharts() - Fix loan chart
-const lCanvas = document.getElementById('loanChart');
-if (this.loanChart) { this.loanChart.destroy(); this.loanChart = null; }
+        });
+    }
 
-if (lCanvas) {
-    const ctx5 = lCanvas.getContext('2d');
-    const loanData = this.loanStats || {};
-    const totalPrincipal = parseFloat(loanData.total_principal) || 0;
-    const totalBalance = parseFloat(loanData.total_balance) || 0;
-    const collected = Math.max(0, totalPrincipal - totalBalance); // Prevent negative
-    const remainingBalance = totalPrincipal - collected;
+    // Monthly Chart
+    if (mCanvas) {
+        const ctx3 = mCanvas.getContext('2d');
+        const monthlyHasData = this.monthlyData.datasets[0].data.some(v => v > 0);
+        this.productionChart = new Chart(ctx3, {
+            type: 'bar',
+            data: {
+                labels: this.monthlyData.labels,
+                datasets: [{
+                    label: 'Monthly Avg (tons)',
+                    data: this.monthlyData.datasets[0].data,
+                    backgroundColor: monthlyHasData ? 'rgba(168, 85, 247, 0.4)' : 'rgba(229, 231, 235, 0.5)',
+                    borderColor: monthlyHasData ? '#a855f7' : '#d1d5db',
+                    borderWidth: 2,
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true, grid: { color: '#f3f4f6' } }, x: { grid: { display: false } } }
+            }
+        });
+    }
 
-    // If no loans, show empty state
-    if (totalPrincipal === 0) {
-        this.loanChart = new Chart(ctx5, {
+    // Distribution Pie Chart
+    if (dCanvas) {
+        const ctx4 = dCanvas.getContext('2d');
+        const distHasData = this.distributionData.labels && this.distributionData.labels[0] !== 'No Data';
+        this.distributionChart = new Chart(ctx4, {
             type: 'doughnut',
             data: {
-                labels: ['No active loans'],
-                datasets: [{ data: [1], backgroundColor: ['#e5e7eb'], borderWidth: 0 }]
+                labels: this.distributionData.labels,
+                datasets: [{
+                    data: this.distributionData.datasets[0].data,
+                    backgroundColor: distHasData ? (this.distributionData.datasets[0].backgroundColor || [
+                        '#22c55e', '#3b82f6', '#a855f7', '#f59e0b', '#ef4444',
+                        '#06b6d4', '#ec4899', '#8b5cf6', '#14b8a6', '#f97316'
+                    ]) : ['#e5e7eb'],
+                    borderWidth: 2,
+                    borderColor: '#fff',
+                    hoverBorderWidth: 3,
+                }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                cutout: '60%',
+                cutout: '55%',
                 plugins: {
-                    legend: { display: false },
-                    tooltip: { enabled: false }
-                }
-            }
-        });
-        
-        // Draw "No Data" text
-        const originalDraw = this.loanChart.draw;
-        this.loanChart.draw = function() {
-            originalDraw.apply(this, arguments);
-            if (this.ctx) {
-                const width = this.width, height = this.height, ctx = this.ctx;
-                ctx.restore();
-                ctx.font = "1em sans-serif";
-                ctx.textBaseline = "middle";
-                ctx.fillStyle = '#9ca3af';
-                const text = 'No Loans';
-                ctx.fillText(text, Math.round((width - ctx.measureText(text).width) / 2), height / 2);
-                ctx.save();
-            }
-        };
-        return;
-    }
-
-    this.loanChart = new Chart(ctx5, {
-        type: 'doughnut',
-        data: {
-            labels: ['Remaining Balance', 'Collected'],
-            datasets: [{
-                data: [remainingBalance, collected],
-                backgroundColor: [
-                    'rgba(239, 68, 68, 0.7)',
-                    'rgba(34, 197, 94, 0.7)'
-                ],
-                borderColor: ['#ef4444', '#22c55e'],
-                borderWidth: 2,
-                hoverBorderWidth: 3,
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            cutout: '60%',
-            plugins: {
-                legend: {
-                    position: 'bottom',
-                    labels: {
-                        padding: 15,
-                        font: { size: 11 },
-                        usePointStyle: true,
-                        pointStyleWidth: 8,
-                    }
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                            const percentage = total > 0 ? ((context.raw / total) * 100).toFixed(1) : 0;
-                            return context.label + ': ₱' + Number(context.raw).toLocaleString() + ' (' + percentage + '%)';
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            padding: 12,
+                            font: { size: 10 },
+                            usePointStyle: true,
+                            pointStyleWidth: 8,
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                if (total === 0) return 'No data';
+                                const percentage = ((context.raw / total) * 100).toFixed(1);
+                                return context.label + ': ' + context.raw.toFixed(1) + ' tons (' + percentage + '%)';
+                            }
                         }
                     }
                 }
             }
-        }
-    });
+        });
+    }
 
-    // Add center text
-    const originalDraw = this.loanChart.draw;
-    this.loanChart.draw = function() {
-        originalDraw.apply(this, arguments);
-        if (this.ctx) {
-            const width = this.width, height = this.height, ctx = this.ctx;
-            ctx.restore();
-            const fontSize = (height / 180).toFixed(2);
-            ctx.font = fontSize + "em sans-serif";
-            ctx.textBaseline = "middle";
-            
-            const rate = totalPrincipal > 0 ? ((collected / totalPrincipal) * 100).toFixed(0) : 0;
-            ctx.fillStyle = rate >= 80 ? '#22c55e' : rate >= 50 ? '#f59e0b' : '#ef4444';
-            const text = rate + '%';
-            ctx.fillText(text, Math.round((width - ctx.measureText(text).width) / 2), height / 2 - 10);
-            
-            ctx.font = (fontSize * 0.5) + "em sans-serif";
-            ctx.fillStyle = '#6b7280';
-            const subText = 'Collected';
-            ctx.fillText(subText, Math.round((width - ctx.measureText(subText).width) / 2), height / 2 + 20);
-            ctx.save();
-        }
-    };
-}
-            // Monthly Chart
-            if (mCanvas) {
-                const ctx3 = mCanvas.getContext('2d');
-                this.productionChart = new Chart(ctx3, {
-                    type: 'bar',
-                    data: {
-                        labels: this.monthlyData.labels,
-                        datasets: [{
-                            label: 'Monthly Avg (tons)',
-                            data: this.monthlyData.datasets[0].data,
-                            backgroundColor: 'rgba(168, 85, 247, 0.4)',
-                            borderColor: '#a855f7',
-                            borderWidth: 2,
-                            borderRadius: 6
-                        }]
-                    },
-                    options: {
-                        responsive: true, maintainAspectRatio: false,
-                        plugins: { legend: { display: false } },
-                        scales: { y: { beginAtZero: true, grid: { color: '#f3f4f6' } }, x: { grid: { display: false } } }
+    // Loan Chart
+    if (lCanvas) {
+        const ctx5 = lCanvas.getContext('2d');
+        const loanData = this.loanStats || {};
+        const totalPrincipal = parseFloat(loanData.total_principal) || 0;
+        const totalBalance = parseFloat(loanData.total_balance) || 0;
+        const collected = Math.max(0, totalPrincipal - totalBalance);
+        const remainingBalance = totalPrincipal - collected;
+
+        if (totalPrincipal === 0) {
+            this.loanChart = new Chart(ctx5, {
+                type: 'doughnut',
+                data: {
+                    labels: ['No active loans'],
+                    datasets: [{ data: [1], backgroundColor: ['#e5e7eb'], borderWidth: 0 }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '60%',
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { enabled: false }
                     }
-                });
-            }
-
-            // Distribution Pie Chart
-            if (dCanvas) {
-                const ctx4 = dCanvas.getContext('2d');
-                this.distributionChart = new Chart(ctx4, {
-                    type: 'doughnut',
-                    data: {
-                        labels: this.distributionData.labels,
-                        datasets: [{
-                            data: this.distributionData.datasets[0].data,
-                            backgroundColor: this.distributionData.datasets[0].backgroundColor || [
-                                '#22c55e', '#3b82f6', '#a855f7', '#f59e0b', '#ef4444',
-                                '#06b6d4', '#ec4899', '#8b5cf6', '#14b8a6', '#f97316'
-                            ],
-                            borderWidth: 2,
-                            borderColor: '#fff',
-                            hoverBorderWidth: 3,
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        cutout: '55%',
-                        plugins: {
-                            legend: {
-                                position: 'right',
-                                labels: {
-                                    padding: 12,
-                                    font: { size: 10 },
-                                    usePointStyle: true,
-                                    pointStyleWidth: 8,
-                                }
-                            },
-                            tooltip: {
-                                callbacks: {
-                                    label: function(context) {
-                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                        const percentage = ((context.raw / total) * 100).toFixed(1);
-                                        return context.label + ': ' + context.raw.toFixed(1) + ' tons (' + percentage + '%)';
-                                    }
+                }
+            });
+        } else {
+            this.loanChart = new Chart(ctx5, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Remaining Balance', 'Collected'],
+                    datasets: [{
+                        data: [remainingBalance, collected],
+                        backgroundColor: ['rgba(239, 68, 68, 0.7)', 'rgba(34, 197, 94, 0.7)'],
+                        borderColor: ['#ef4444', '#22c55e'],
+                        borderWidth: 2,
+                        hoverBorderWidth: 3,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '60%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 15,
+                                font: { size: 11 },
+                                usePointStyle: true,
+                                pointStyleWidth: 8,
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = total > 0 ? ((context.raw / total) * 100).toFixed(1) : 0;
+                                    return context.label + ': \u20B1' + Number(context.raw).toLocaleString() + ' (' + percentage + '%)';
                                 }
                             }
                         }
                     }
-                });
-            }
-        },
+                }
+            });
+        }
+    }
+},
 
         getAlertClass(type) {
             const classes = {
