@@ -58,7 +58,7 @@
                     </div>
                     <p class="text-sm text-gray-500 font-medium">Total Net Cane</p>
                     <p class="text-2xl font-bold text-gray-900 mt-1" x-text="formatNumber(stats.totalNetCane, 0)"></p>
-                    <p class="text-xs text-gray-400 mt-0.5">metric tons</p>
+                    <p class="text-xs text-gray-400 mt-0.5">Tons</p>
                 </div>
             </div>
 
@@ -118,7 +118,7 @@
                     <p class="text-sm text-gray-500 font-medium">Quedan Price</p>
                     <p class="text-2xl font-bold text-gray-900 mt-1">₱<span
                             x-text="formatNumber(stats.quedanPrice, 2)"></span></p>
-                    <p class="text-xs text-gray-400 mt-0.5">per unit</p>
+                    <p class="text-xs text-gray-400 mt-0.5">per lkg</p>
                 </div>
             </div>
         </div>
@@ -220,9 +220,8 @@
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
             <div class="flex items-center justify-between mb-4">
                 <div>
-                    <h3 class="text-lg font-bold text-gray-900">Monthly Production Average</h3>
-                    <p class="text-xs text-gray-500 mt-0.5">Average net cane per month for <span
-                            x-text="stats.currentCropYear"></span></p>
+                    <h3 class="text-lg font-bold text-gray-900">Monthly Production Total</h3>
+<p class="text-xs text-gray-500 mt-0.5">Total net cane per month for <span x-text="stats.currentCropYear"></span></p>
                 </div>
             </div>
             <div class="relative w-full" style="height: 250px;">

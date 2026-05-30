@@ -155,7 +155,7 @@ function dashboardData() {
             data: {
                 labels: this.monthlyData.labels,
                 datasets: [{
-                    label: 'Monthly Avg (tons)',
+                    label: 'Monthly Total (tons)',
                     data: this.monthlyData.datasets[0].data,
                     backgroundColor: monthlyHasData ? 'rgba(168, 85, 247, 0.4)' : 'rgba(229, 231, 235, 0.5)',
                     borderColor: monthlyHasData ? '#a855f7' : '#d1d5db',

@@ -627,6 +627,14 @@ public function voucherPDF(Request $request)
     
     $caneChange = $lastYearTAWT > 0 ? (($totalTAWT - $lastYearTAWT) / $lastYearTAWT) * 100 : 0;
     $maxWeek = ConsolidatedUpload::where('crop_year', $currentCropYear)->max('week_no') ?? 0;
+    $bestWeekData = ConsolidatedUpload::where('crop_year', $currentCropYear)
+        ->select('week_no', DB::raw('SUM(CAST(ta_wt AS DECIMAL(12,3))) as total_ta_wt'))
+        ->groupBy('week_no')
+        ->orderByDesc('total_ta_wt')
+        ->first();
+
+    $bestWeek = $bestWeekData ? (int) $bestWeekData->week_no : 0;
+    $bestWeekCane = $bestWeekData ? (float) $bestWeekData->total_ta_wt : 0;
     
     $quedanPriceQuery = QuedanPrice::orderBy('created_at', 'desc');
     $molassesPriceQuery = MolassesPrice::orderBy('created_at', 'desc');
@@ -675,6 +683,8 @@ public function voucherPDF(Request $request)
             'totalPlanters' => $totalPlanters,
             'currentCropYear' => $currentCropYear,
             'currentWeek' => (int) $maxWeek,
+            'bestWeek' => $bestWeek,
+            'bestWeekCane' => $bestWeekCane,
             'caneChange' => round($caneChange, 1),
             'amountChange' => 12.5,
             'quedanPrice' => $quedanPrice,
@@ -684,8 +694,8 @@ public function voucherPDF(Request $request)
             'totalLoanAmount' => \App\Models\Loan::whereIn('status', ['active', 'approved'])->sum('principal_amount'),
             'totalMolasses' => 0,
             'averageYield' => $activePlantersCount > 0 ? round($totalTAWT / $activePlantersCount, 2) : 0,
-            'bestWeek' => (int) $maxWeek,
-            'bestWeekCane' => (float) ConsolidatedUpload::where('crop_year', $currentCropYear)->where('week_no', $maxWeek)->sum('ta_wt'),
+            // 'bestWeek' => (int) $maxWeek,
+            // 'bestWeekCane' => (float) ConsolidatedUpload::where('crop_year', $currentCropYear)->where('week_no', $maxWeek)->sum('ta_wt'),
             'collectionRate' => $this->getLoanCollectionRate(),
             'riskPlanters' => count($riskPlanters),
             'pendingApprovals' => \App\Models\Loan::where('status', 'pending')->count(),
@@ -905,25 +915,20 @@ private function getMonthlyAverageData($cropYear)
     ];
     
     $weeklyData = ConsolidatedUpload::where('crop_year', $cropYear)
-        ->select('week_no', DB::raw('AVG(CAST(ta_wt AS DECIMAL(12,3))) as avg_ta_wt'))
+        ->select('week_no', DB::raw('SUM(CAST(ta_wt AS DECIMAL(12,3))) as total_ta_wt'))
         ->groupBy('week_no')
         ->get();
-    
-    $monthCounts = array_fill(0, 12, 0);
     
     foreach ($weeklyData as $week) {
         $weekNo = (int) $week->week_no;
         if (isset($weekMonthMap[$weekNo])) {
             $monthIndex = $weekMonthMap[$weekNo];
-            $monthlyData[$monthIndex] += (float) $week->avg_ta_wt;
-            $monthCounts[$monthIndex]++;
+            $monthlyData[$monthIndex] += (float) $week->total_ta_wt;
         }
     }
     
     foreach ($monthlyData as $i => $total) {
-        if ($monthCounts[$i] > 0) {
-            $monthlyData[$i] = round($total / $monthCounts[$i], 2);
-        }
+        $monthlyData[$i] = round($total, 2);
     }
     
     return ['labels' => $months, 'datasets' => [['data' => $monthlyData]]];
