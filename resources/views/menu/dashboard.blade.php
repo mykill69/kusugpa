@@ -221,7 +221,8 @@
             <div class="flex items-center justify-between mb-4">
                 <div>
                     <h3 class="text-lg font-bold text-gray-900">Monthly Production Total</h3>
-<p class="text-xs text-gray-500 mt-0.5">Total net cane per month for <span x-text="stats.currentCropYear"></span></p>
+                    <p class="text-xs text-gray-500 mt-0.5">Total net cane per month for <span
+                            x-text="stats.currentCropYear"></span></p>
                 </div>
             </div>
             <div class="relative w-full" style="height: 250px;">

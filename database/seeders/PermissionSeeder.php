@@ -154,6 +154,31 @@ class PermissionSeeder extends Seeder
                 'slug' => 'upload-molasses',
                 'description' => 'Can upload molasses CSV files',
             ],
+            [
+                'name' => 'View Cash Advances',
+                'slug' => 'view-cash-advances',
+                'description' => 'Can view cash advance records and details',
+            ],
+            [
+                'name' => 'Create Cash Advances',
+                'slug' => 'create-cash-advances',
+                'description' => 'Can create new cash advance applications',
+            ],
+            [
+                'name' => 'Approve Cash Advances',
+                'slug' => 'approve-cash-advances',
+                'description' => 'Can approve or reject cash advance applications',
+            ],
+            [
+                'name' => 'Process Cash Advance Payments',
+                'slug' => 'process-cash-advance-payments',
+                'description' => 'Can record cash advance payments',
+            ],
+            [
+                'name' => 'Manage Cash Advance Settings',
+                'slug' => 'manage-cash-advance-settings',
+                'description' => 'Can configure cash advance settings',
+            ],
         ];
 
         // Use updateOrCreate to avoid duplicate key errors

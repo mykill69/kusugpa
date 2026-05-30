@@ -15,6 +15,7 @@ use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\PlanterProfileController;
 use App\Http\Controllers\ConsolidatedReportController;
 use App\Http\Controllers\TruckingAllowanceController;
+use App\Http\Controllers\CashAdvanceController;
 use Illuminate\Http\Request;
 
 
@@ -88,6 +89,25 @@ Route::middleware(['login_auth'])->group(function () {
     // Loan Show - MUST BE VERY LAST
     Route::get('/loans/{loan}', [LoanController::class, 'show'])->name('loans.show');
     // ==================== END LOAN ROUTES ====================
+
+
+    // Cash Advance Routes - STATIC routes MUST come before wildcard routes
+    Route::get('/cash-advances', [CashAdvanceController::class, 'index'])->name('cash-advances.index');
+    Route::get('/cash-advances/create', [CashAdvanceController::class, 'create'])->name('cash-advances.create');
+    Route::get('/cash-advances/settings', [CashAdvanceController::class, 'settings'])->name('cash-advances.settings');
+    Route::post('/cash-advances/settings', [CashAdvanceController::class, 'updateSettings'])->name('cash-advances.settings.update');
+    Route::post('/cash-advances', [CashAdvanceController::class, 'store'])->name('cash-advances.store');
+
+    // Wildcard routes AFTER static routes
+    Route::get('/cash-advances/{cashAdvance}', [CashAdvanceController::class, 'show'])->name('cash-advances.show');
+    Route::post('/cash-advances/{cashAdvance}/approve', [CashAdvanceController::class, 'approve'])->name('cash-advances.approve');
+    Route::post('/cash-advances/{cashAdvance}/activate', [CashAdvanceController::class, 'activate'])->name('cash-advances.activate');
+    Route::post('/cash-advances/{cashAdvance}/reject', [CashAdvanceController::class, 'reject'])->name('cash-advances.reject');
+    Route::post('/cash-advances/{cashAdvance}/payment', [CashAdvanceController::class, 'recordPayment'])->name('cash-advances.payment');
+    Route::delete('/cash-advances/{cashAdvance}', [CashAdvanceController::class, 'destroy'])->name('cash-advances.destroy');
+
+
+
 
     // Settings Routes
     Route::post('/updates/add-crop-year', [UpdatesController::class, 'addCropYear'])

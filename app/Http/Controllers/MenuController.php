@@ -15,6 +15,7 @@ use App\Models\MolassesPrice;
 use App\Models\User;
 use App\Models\SystemSetting;
 use App\Models\LoanSetting;
+use App\Models\CashAdvanceAmortization;
 use App\Models\TruckingAllowance;
 use App\Models\AuditLog;
 use App\Models\PlanterProfile;
@@ -588,6 +589,24 @@ public function voucherPDF(Request $request)
             $data['loan_deduction'] = $deduction;
         }
     }
+
+    // Cash Advance Auto-Deduct
+    $caAutoDeduct = LoanSetting::get('ca_auto_deduct', false);
+    if ($caAutoDeduct) {
+        foreach ($summaryData as $data) {
+            $caDeduction = CashAdvanceAmortization::whereHas('cashAdvance', function($q) use ($data, $cropYear) {
+                $q->where('planter_code', $data['planter_code'])
+                ->where('crop_year', $cropYear)
+                ->whereIn('status', ['active']);
+            })
+            ->where('status', 'pending')
+            ->sum('amount_due');
+            
+            $data['loan_deduction'] = ($data['loan_deduction'] ?? 0) + $caDeduction;
+            $data['ca_deduction'] = $caDeduction;
+        }
+    }
+
 
     return Pdf::loadView('pdf.voucher', [
         'summaryData' => $summaryData,

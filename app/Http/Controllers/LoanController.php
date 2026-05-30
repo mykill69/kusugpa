@@ -11,6 +11,7 @@ use App\Models\Summary;
 use App\Models\CropYear;
 use App\Models\User;
 use App\Models\AuditLog;
+use App\Models\PlanterProfile;
 use Carbon\Carbon;
 
 class LoanController extends Controller
@@ -57,6 +58,14 @@ class LoanController extends Controller
         return $this->user()->hasPermission('manage-loan-settings');
     }
 
+     private function getActivePlanters()
+    {
+        return PlanterProfile::where('status', 'active')
+            ->select('planter_code', 'planter_name')
+            ->orderBy('planter_name')
+            ->get();
+    }
+
     public function __construct()
     {
         $this->middleware(function ($request, $next) {
@@ -100,10 +109,7 @@ class LoanController extends Controller
 
         $loanTypes = LoanType::where('is_active', true)->get();
         $cropYears = CropYear::pluck('crop_year');
-        $planters = Summary::select('planter_code', 'planter_name')
-            ->distinct()
-            ->orderBy('planter_name')
-            ->get();
+        $planters = $this->getActivePlanters();
         $stats = $this->getLoanStats();
 
         $userPermissions = [
@@ -119,10 +125,7 @@ class LoanController extends Controller
     {
         $loanTypes = LoanType::where('is_active', true)->get();
         $cropYears = CropYear::pluck('crop_year');
-        $planters = Summary::select('planter_code', 'planter_name')
-            ->distinct()
-            ->orderBy('planter_name')
-            ->get();
+        $planters = $this->getActivePlanters();
         $settings = [
             'default_interest' => LoanSetting::get('default_interest_rate', 5),
             'max_term' => LoanSetting::get('max_loan_term_months', 24),

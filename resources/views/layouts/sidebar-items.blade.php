@@ -363,6 +363,50 @@
     </li>
 @endif
 
+
+<!-- Cash Advances Dropdown -->
+@php
+    $canViewCA =
+        in_array(auth()->user()->role, ['Administrator', 'super_admin', 'manager', 'loan_officer']) ||
+        auth()->user()->hasPermission('view-cash-advances') ||
+        auth()->user()->hasPermission('create-cash-advances') ||
+        auth()->user()->hasPermission('approve-cash-advances') ||
+        auth()->user()->hasPermission('process-cash-advance-payments') ||
+        auth()->user()->hasPermission('manage-cash-advance-settings');
+@endphp
+
+@if ($canViewCA)
+    <li x-data="{ open: {{ request()->routeIs('cash-advances.*') ? 'true' : 'false' }} }">
+        <button @click="open = !open"
+            class="group flex w-full items-center gap-x-3 rounded-md p-2 text-sm font-semibold {{ request()->routeIs('cash-advances.*') ? 'bg-primary-50 text-primary-700' : 'text-gray-700 hover:text-primary-600 hover:bg-gray-50' }}">
+            <i class="fas fa-money-bill-wave w-5 h-5 shrink-0 flex items-center justify-center text-center"></i>
+            <span class="flex-1 text-left">Cash Advances</span>
+            <i class="fas fa-chevron-down w-4 h-4 shrink-0 flex items-center justify-center transition-transform"
+                :class="{ 'rotate-180': open }"></i>
+        </button>
+        <ul x-show="open" class="mt-1 space-y-1 ml-8">
+            <li>
+                <a href="{{ route('cash-advances.index') }}"
+                    class="group flex items-center gap-x-2 rounded-md py-1.5 px-2 text-sm {{ request()->routeIs('cash-advances.index') ? 'bg-primary-50 text-primary-700 font-medium' : 'text-gray-600 hover:text-primary-600 hover:bg-gray-50' }}">
+                    <i class="fas fa-list w-4 h-4 shrink-0 flex items-center justify-center text-gray-400"></i>
+                    <span>All Cash Advances</span>
+                </a>
+            </li>
+            @if (in_array(auth()->user()->role, ['Administrator', 'super_admin', 'manager']) ||
+                    auth()->user()->hasPermission('manage-cash-advance-settings'))
+                <li>
+                    <a href="{{ route('cash-advances.settings') }}"
+                        class="group flex items-center gap-x-2 rounded-md py-1.5 px-2 text-sm {{ request()->routeIs('cash-advances.settings') ? 'bg-primary-50 text-primary-700 font-medium' : 'text-gray-600 hover:text-primary-600 hover:bg-gray-50' }}">
+                        <i class="fas fa-cog w-4 h-4 shrink-0 flex items-center justify-center text-gray-400"></i>
+                        <span>CA Settings</span>
+                    </a>
+                </li>
+            @endif
+        </ul>
+    </li>
+@endif
+
+
 <!-- User Management -->
 @if (auth()->user()->role === 'Administrator' || auth()->user()->role === 'super_admin')
     <li>
