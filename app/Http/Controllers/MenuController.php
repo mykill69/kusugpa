@@ -451,6 +451,9 @@ public function voucherPDF(Request $request)
                 'trucking_ta_amount' => 0,
                 'trucking_additional_charge' => 0,
                 'trucking_trans_codes' => [],
+                'consolidated_ta_amount' => 0,
+                'consolidated_fuel_amount' => 0,
+                'sugar_lkg' => 0,
             ];
         }
 
@@ -467,6 +470,7 @@ public function voucherPDF(Request $request)
             $summaryData[$key]['quedan_b_lkg'] += $netLkg;
             $summaryData[$key]['quedan_b_price'] = $priceB;
             $summaryData[$key]['quedan_b_liens'] += $quedan->total_liens;
+            $summaryData[$key]['sugar_lkg'] += $quedan->sugar_lkg;
         }
 
         if (isset($quedanPrices['D'])) {
@@ -480,6 +484,7 @@ public function voucherPDF(Request $request)
             $summaryData[$key]['quedan_b_lkg'] += $netLkg;
             $summaryData[$key]['quedan_b_price'] = 0;
             $summaryData[$key]['quedan_b_liens'] += $quedan->total_liens;
+            $summaryData[$key]['sugar_lkg'] += $quedan->sugar_lkg;
         }
     }
 
@@ -534,6 +539,10 @@ public function voucherPDF(Request $request)
         }
 
         $summaryData[$key]['consolidated_ta_wt'] += $consolidated->ta_wt;
+        $summaryData[$key]['consolidated_total'] += $consolidated->total_summary;
+        $summaryData[$key]['consolidated_ta_wt'] += $consolidated->ta_wt;
+        $summaryData[$key]['consolidated_ta_amount'] += $consolidated->ta_amount;
+        $summaryData[$key]['consolidated_fuel_amount'] += $consolidated->fuel_issuance_amt;
         $summaryData[$key]['consolidated_total'] += $consolidated->total_summary;
     }
 

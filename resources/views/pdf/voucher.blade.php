@@ -190,11 +190,15 @@
             clear: both;
         }
     </style>
+
+
 </head>
 
 <body>
     @foreach ($summaryData as $record)
         @php
+            $sugar_lkg = $record['sugar_lkg'] ?? 0;
+
             $quedan_a_lkg = $record['quedan_a_lkg'] ?? 0;
             $quedan_a_price = $record['quedan_a_price'] ?? 0;
             $quedan_a_gross = $quedan_a_lkg * $quedan_a_price;
@@ -203,20 +207,13 @@
             $quedan_b_price = $record['quedan_b_price'] ?? 0;
             $quedan_b_gross = $quedan_b_lkg * $quedan_b_price;
             $quedan_b_liens = $record['quedan_b_liens'] ?? 0;
-
-
-            
             $has_additional_insurance = $record['has_additional_insurance'] ?? false;
 
-
-
-            $quedan_b_service = $has_additional_insurance
-                ? $quedan_b_lkg * 8.0 + $quedan_b_lkg * 7.0
-                : $quedan_b_lkg * 8.0;
-            $quedan_b_insurance = $quedan_b_lkg * 3.0;
-            $quedan_b_tax = $quedan_b_gross * 0.01;
-            $quedan_b_total_deductions = $quedan_b_service + $quedan_b_insurance + $quedan_b_tax;
-            $quedan_b_net = $quedan_b_gross + $quedan_b_liens - $quedan_b_total_deductions;
+            $quedan_b_service = $has_additional_insurance ? $sugar_lkg * 8.0 + $sugar_lkg * 7.0 : $sugar_lkg * 8.0;
+            $quedan_b_insurance = $sugar_lkg * 3.0;
+            $quedan_b_tax = $sugar_lkg * $quedan_b_price * 0.01;
+            $quedan_b_total_deductions = $quedan_b_liens + $quedan_b_service + $quedan_b_insurance + $quedan_b_tax;
+            $quedan_b_net = $quedan_b_gross - $quedan_b_total_deductions;
 
             $quedan_d_lkg = $record['quedan_d_lkg'] ?? 0;
             $quedan_d_price = $record['quedan_d_price'] ?? 0;
@@ -224,7 +221,7 @@
             $quedan_d_liens = $record['quedan_d_liens'] ?? 0;
             $quedan_d_service = $quedan_d_lkg * 8.0;
             $quedan_d_insurance = $quedan_d_lkg * 3.0;
-            $quedan_d_tax = $quedan_d_gross * 0.01;
+            $quedan_d_tax = $quedan_d_lkg * $quedan_d_price * 0.01;
             $quedan_d_total_deductions = $quedan_d_liens + $quedan_d_service + $quedan_d_insurance + $quedan_d_tax;
             $quedan_d_net = $quedan_d_gross - $quedan_d_total_deductions;
 
@@ -233,25 +230,28 @@
             $quedanTotalServiceCharge = $quedan_b_service + $quedan_d_service;
             $quedanTotalInsurance = $quedan_b_insurance + $quedan_d_insurance;
             $quedanTotalTax = $quedan_b_tax + $quedan_d_tax;
-            $quedanTotalDeductions = $quedanTotalServiceCharge + $quedanTotalInsurance + $quedanTotalTax;
-            $quedanNetProceeds = $quedanGrossProceeds + $quedanTotalLiens - $quedanTotalDeductions;
+            $quedanTotalDeductions =
+                $quedanTotalLiens + $quedanTotalServiceCharge + $quedanTotalInsurance + $quedanTotalTax;
+            $quedanNetProceeds = $quedanGrossProceeds - $quedanTotalDeductions;
 
             $mol_net = $record['mol_net'] ?? 0;
             $mol_price = $record['mol_price'] ?? 0;
             $molasses_gross = $mol_net * $mol_price;
             $molasses_liens = $record['molasses_liens'] ?? 0;
             $molasses_service = $mol_net * 20.0;
-            $molasses_insurance = $mol_net * 120.0;
-            $molasses_tax = $molasses_gross * 0.01;
+            $molasses_insurance = $mol_net * 120.0 + 30.0;
+            $molasses_tax = $mol_net * $mol_price * 0.01;
             $molasses_total_deductions = $molasses_liens + $molasses_service + $molasses_insurance + $molasses_tax;
             $molasses_net = $molasses_gross - $molasses_total_deductions;
 
             $consolidated_ta_wt = $record['consolidated_ta_wt'] ?? 0;
-            $consolidated_total = $record['consolidated_total'] ?? 0;
+            $consolidated_ta_amount = $record['consolidated_ta_amount'] ?? 0;
+            $consolidated_fuel_amount = $record['consolidated_fuel_amount'] ?? 0;
+            $consolidated_net = $consolidated_ta_amount - $consolidated_fuel_amount;
 
-            $totalGrossProceeds = $quedanGrossProceeds + $molasses_gross + $consolidated_total;
-            $totalDeductions = $quedanTotalDeductions + $molasses_total_deductions;
-            $totalNetProceeds = $quedanNetProceeds + $molasses_net + $consolidated_total - $totalDeductions;
+            $totalGrossProceeds = $quedanGrossProceeds + $molasses_gross + $consolidated_ta_amount;
+            $totalDeductions = $quedanTotalDeductions + $molasses_total_deductions + $consolidated_fuel_amount;
+            $totalNetProceeds = $totalGrossProceeds - $totalDeductions;
         @endphp
 
         <div class="page">
@@ -274,7 +274,6 @@
                         {{ $record['week_no'] }}
                     </td>
                     <td class="text-right">
-
                     </td>
                 </tr>
             </table>
@@ -322,8 +321,7 @@
                         <td>{{ $quedan_b_service ? number_format($quedan_b_service, 2) : '' }}</td>
                         <td>{{ $quedan_b_insurance ? number_format($quedan_b_insurance, 2) : '' }}</td>
                         <td>{{ $quedan_b_tax ? number_format($quedan_b_tax, 2) : '' }}</td>
-                        <td>{{ $quedan_b_total_deductions ? number_format($quedan_b_total_deductions, 2) : '' }}
-                        </td>
+                        <td>{{ $quedan_b_total_deductions ? number_format($quedan_b_total_deductions, 2) : '' }}</td>
                         <td>{{ $quedan_b_net ? number_format($quedan_b_net, 2) : '' }}</td>
                     </tr>
 
@@ -336,8 +334,7 @@
                         <td>{{ $quedan_d_service ? number_format($quedan_d_service, 2) : '' }}</td>
                         <td>{{ $quedan_d_insurance ? number_format($quedan_d_insurance, 2) : '' }}</td>
                         <td>{{ $quedan_d_tax ? number_format($quedan_d_tax, 2) : '' }}</td>
-                        <td>{{ $quedan_d_total_deductions ? number_format($quedan_d_total_deductions, 2) : '' }}
-                        </td>
+                        <td>{{ $quedan_d_total_deductions ? number_format($quedan_d_total_deductions, 2) : '' }}</td>
                         <td>{{ $quedan_d_net ? number_format($quedan_d_net, 2) : '' }}</td>
                     </tr>
 
@@ -350,8 +347,7 @@
                         <td>{{ $molasses_service ? number_format($molasses_service, 2) : '' }}</td>
                         <td>{{ $molasses_insurance ? number_format($molasses_insurance, 2) : '' }}</td>
                         <td>{{ $molasses_tax ? number_format($molasses_tax, 2) : '' }}</td>
-                        <td>{{ $molasses_total_deductions ? number_format($molasses_total_deductions, 2) : '' }}
-                        </td>
+                        <td>{{ $molasses_total_deductions ? number_format($molasses_total_deductions, 2) : '' }}</td>
                         <td>{{ $molasses_net ? number_format($molasses_net, 2) : '' }}</td>
                     </tr>
 
@@ -359,17 +355,17 @@
                         <td><strong>T</strong></td>
                         <td>{{ $consolidated_ta_wt ? number_format($consolidated_ta_wt, 3) : '' }}</td>
                         <td></td>
-                        <td>{{ $consolidated_total ? number_format($consolidated_total, 2) : '' }}</td>
-                        <td colspan="5"></td>
-                        <td>{{ $consolidated_total ? number_format($consolidated_total, 2) : '' }}</td>
+                        <td>{{ $consolidated_ta_amount ? number_format($consolidated_ta_amount, 2) : '' }}</td>
+                        <td colspan="4"></td>
+                        <td>{{ $consolidated_fuel_amount ? number_format($consolidated_fuel_amount, 2) : '' }}</td>
+                        <td>{{ $consolidated_net ? number_format($consolidated_net, 2) : '' }}</td>
                     </tr>
 
                     <tr style="border-top: 2px solid #000; border-bottom: 2px solid #000;">
                         <td></td>
                         <td><strong>TOTAL >>>>>>></strong></td>
                         <td></td>
-                        <td class="font-bold">
-                            {{ $totalGrossProceeds ? number_format($totalGrossProceeds, 2) : '' }}
+                        <td class="font-bold">{{ $totalGrossProceeds ? number_format($totalGrossProceeds, 2) : '' }}
                         </td>
                         <td class="font-bold">
                             {{ $quedanTotalLiens + $molasses_liens ? number_format($quedanTotalLiens + $molasses_liens, 2) : '' }}
@@ -384,49 +380,129 @@
                             {{ $quedanTotalTax + $molasses_tax ? number_format($quedanTotalTax + $molasses_tax, 2) : '' }}
                         </td>
                         <td class="font-bold">{{ $totalDeductions ? number_format($totalDeductions, 2) : '' }}</td>
-                        <td class="font-bold">{{ $totalNetProceeds ? number_format($totalNetProceeds, 2) : '' }}
-                        </td>
+                        <td class="font-bold">{{ $totalNetProceeds ? number_format($totalNetProceeds, 2) : '' }}</td>
                     </tr>
                 </tbody>
             </table>
+
+            <div class="voucher-paper">
+                <!-- clear both as original (though no floats, just structural) -->
+                <div style="clear: both;"></div>
+
+
+                <table
+                    style="width: 100%; margin-top: 0; font-size: 11px; border-collapse: collapse; table-layout: fixed;">
+                    <!-- FIRST ROW: includes Prepared by (rowspan), deduction labels, amounts, payment approved -->
+                    <tr>
+                        <!-- LEFT CELL: Prepared by with signature line - rowspan 2, so it spans both deduction rows and the NET PROCEEDS row -->
+                        <td rowspan="2" style="width: 28%; vertical-align: bottom; padding-right: 20px;">
+                            <p style="margin: 0 0 2px 0; font-weight: 500;">Prepared by:</p>
+                            <!-- underline as per image -->
+                            <div style="border-top: 1px solid #000; width: 90%; margin-top: 3px;"></div>
+                            <!-- additional space to mimic signature area -->
+                            <div style="height: 18px;"></div>
+                        </td>
+
+                        <!-- LABEL COLUMN: LOAN PAYMENT, CASH ADVANCE, OTHERS, FUEL -->
+                        <td style="width: 38%; vertical-align: top; padding-right: 12px;">
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <tr>
+                                    <td style="padding: 3px 0;" class="label-cell">LOAN PAYMENT</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 3px 0;" class="label-cell">CASH ADVANCE PAYMENT</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 3px 0;" class="label-cell">OTHERS ACCOUNT</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 3px 0;" class="label-cell">FUEL PAYMENT</td>
+                                </tr>
+                            </table>
+                        </td>
+
+                        <!-- AMOUNT COLUMN: dynamic numeric values with bottom border (formatting preserved) -->
+                        <td style="width: 22%; vertical-align: top; padding-right: 12px;">
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <tr>
+                                    <td style="text-align: right; padding: 3px 0;">
+                                        {{ number_format($record['loan_deduction'] ?? 0, 2) }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="text-align: right; padding: 3px 0;">
+                                        {{ number_format($record['ca_deduction'] ?? 0, 2) }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="text-align: right; padding: 3px 0;">
+                                        .00
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="text-align: right; padding: 3px 0;">
+                                        .00
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+
+                        <!-- RIGHT COLUMN: Payment Approved with signature line (aligned at bottom) -->
+                        <td style="width: 22%; vertical-align: bottom; text-align: right; padding-left: 8px;">
+                            <p style="text-align: right; margin: 0; font-weight: 500;">Payment Approved</p>
+                            <div style="border-top: 1px solid #000; width: 100%; margin-top: 6px;"></div>
+                            <div style="height: 16px;"></div>
+                        </td>
+                    </tr>
+
+                    <!-- SECOND ROW: NET PROCEEDS section - positioned directly under the label & amount columns, spanning inside the same grid -->
+                    <tr>
+                        <!-- NET PROCEEDS label column (replaces deduction labels area) -->
+                        <td style="width: 38%; vertical-align: middle; padding-top: 12px;">
+                            <p style="margin: 0; font-weight: 700; font-size: 11px;">NET PROCEEDS</p>
+                        </td>
+                        <!-- NET PROCEEDS amount column -->
+                        <td style="width: 22%; vertical-align: middle; padding-top: 12px;">
+                            <p style="font-size: 13px; font-weight: 800; margin: 0;" class="net-amount-value">
+                                {{ number_format($totalNetProceeds, 2) }}
+                            </p>
+                        </td>
+                        <!-- rightmost cell remains empty (Payment Approved already handled in row1) -->
+                        <td style="width: 22%; vertical-align: middle;"></td>
+                    </tr>
+                </table>
+
+                <!-- RECEIVED SECTION (exactly as original, positioning preserved) -->
+                <div style="margin-top: 28px; padding-top: 6px;">
+                    <p style="font-size: 11px; margin-bottom: 5px;">
+                        Received the sum of
+                        <strong> ₱ {{ number_format($totalNetProceeds, 2) }}</strong>
+                        in full payment of the above account
+                    </p>
+                </div>
+
+                <!-- CREDITOR SIGNATURE (positioned right, same as original) -->
+                <div style="text-align: right; margin-top: 30px;">
+                    <div style="display: inline-block; text-align: center;">
+                        <div style="border-top: 1px solid #000; width: 220px; padding-top: 4px; font-size: 11px;">
+                            (Creditor)
+                        </div>
+                    </div>
+                </div>
+
+
+            </div>
+
+
 
             <div class="amount-words">
                 <strong>Amount in Words:</strong> {{ convertToWords($totalNetProceeds) }}
             </div>
 
-            <div class="totals-section clearfix">
-                <table style="float: right; width: 50%; margin-top: 20px;">
-                    <tr>
-                        <td><strong>Gross Proceeds:</strong></td>
-                        <td class="text-right">{{ number_format($totalGrossProceeds, 2) }}</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Less: Total Deductions:</strong></td>
-                        <td class="text-right">{{ number_format($totalDeductions, 2) }}</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Net Amount Due:</strong></td>
-                        <td class="text-right font-bold" style="font-size: 14px;">
-                            {{ number_format($totalNetProceeds, 2) }}</td>
-                    </tr>
-                </table>
-            </div>
 
-            <div style="clear: both;"></div>
-
-            <div class="signature-section">
-                <div class="signature-box">
-                    <div class="signature-line">Prepared by</div>
-                </div>
-                <div class="signature-box">
-                    <div class="signature-line">Checked by</div>
-                </div>
-                <div class="signature-box">
-                    <div class="signature-line">Approved by</div>
-                </div>
-            </div>
         </div>
     @endforeach
 </body>
+
 
 </html>
