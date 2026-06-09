@@ -515,36 +515,37 @@ public function voucherPDF(Request $request)
         $summaryData[$key]['mol_price'] = $mol->mol_price;
     }
 
-    foreach ($consolidatedUploads as $consolidated) {
-        $key = $consolidated->planter_code;
+   foreach ($consolidatedUploads as $consolidated) {
+    $key = $consolidated->planter_code;
 
-        if (!isset($summaryData[$key])) {
-            $summaryData[$key] = [
-                'planter_code' => $consolidated->planter_code,
-                'planter_name' => $consolidated->planter_name,
-                'tin_no' => '',
-                'week_no' => $weekFrom . ' - ' . $weekTo,
-                'week_end_date' => $weekEndDates[$weekTo] ?? '',
-                'quedan_a_lkg' => 0, 'quedan_a_price' => 0,
-                'quedan_b_lkg' => 0, 'quedan_b_price' => 0, 'quedan_b_liens' => 0,
-                'quedan_b_service_charge' => 0, 'quedan_b_insurance' => 0, 'quedan_b_tax' => 0,
-                'quedan_d_lkg' => 0, 'quedan_d_price' => 0, 'quedan_d_liens' => 0,
-                'quedan_d_service_charge' => 0, 'quedan_d_insurance' => 0, 'quedan_d_tax' => 0,
-                'mol_net' => 0, 'mol_price' => 0, 'molasses_liens' => 0,
-                'molasses_service_charge' => 0, 'molasses_insurance' => 0, 'molasses_tax' => 0,
-                'consolidated_total' => 0, 'consolidated_ta_wt' => 0,
-                'trucking_net_cane' => 0, 'trucking_ta_amount' => 0,
-                'trucking_additional_charge' => 0, 'trucking_trans_codes' => [],
-            ];
-        }
-
-        $summaryData[$key]['consolidated_ta_wt'] += $consolidated->ta_wt;
-        $summaryData[$key]['consolidated_total'] += $consolidated->total_summary;
-        $summaryData[$key]['consolidated_ta_wt'] += $consolidated->ta_wt;
-        $summaryData[$key]['consolidated_ta_amount'] += $consolidated->ta_amount;
-        $summaryData[$key]['consolidated_fuel_amount'] += $consolidated->fuel_issuance_amt;
-        $summaryData[$key]['consolidated_total'] += $consolidated->total_summary;
+    if (!isset($summaryData[$key])) {
+        $summaryData[$key] = [
+            'planter_code' => $consolidated->planter_code,
+            'planter_name' => $consolidated->planter_name,
+            'tin_no' => '',
+            'week_no' => $weekFrom . ' - ' . $weekTo,
+            'week_end_date' => $weekEndDates[$weekTo] ?? '',
+            'quedan_a_lkg' => 0, 'quedan_a_price' => 0,
+            'quedan_b_lkg' => 0, 'quedan_b_price' => 0, 'quedan_b_liens' => 0,
+            'quedan_b_service_charge' => 0, 'quedan_b_insurance' => 0, 'quedan_b_tax' => 0,
+            'quedan_d_lkg' => 0, 'quedan_d_price' => 0, 'quedan_d_liens' => 0,
+            'quedan_d_service_charge' => 0, 'quedan_d_insurance' => 0, 'quedan_d_tax' => 0,
+            'mol_net' => 0, 'mol_price' => 0, 'molasses_liens' => 0,
+            'molasses_service_charge' => 0, 'molasses_insurance' => 0, 'molasses_tax' => 0,
+            'consolidated_total' => 0, 'consolidated_ta_wt' => 0,
+            'trucking_net_cane' => 0, 'trucking_ta_amount' => 0,
+            'trucking_additional_charge' => 0, 'trucking_trans_codes' => [],
+            'consolidated_ta_amount' => 0,
+            'consolidated_fuel_amount' => 0,
+            'sugar_lkg' => 0,
+        ];
     }
+
+    $summaryData[$key]['consolidated_ta_wt'] += $consolidated->ta_wt;
+    $summaryData[$key]['consolidated_ta_amount'] += $consolidated->ta_amount;
+    $summaryData[$key]['consolidated_fuel_amount'] += $consolidated->fuel_issuance_amt;
+    $summaryData[$key]['consolidated_total'] += $consolidated->total_summary;
+}
 
     foreach ($truckingAllowances as $trucking) {
         $key = $trucking->planter_code;

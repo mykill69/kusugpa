@@ -244,6 +244,7 @@
             $molasses_total_deductions = $molasses_liens + $molasses_service + $molasses_insurance + $molasses_tax;
             $molasses_net = $molasses_gross - $molasses_total_deductions;
 
+            $trucking_net_cane = $record['trucking_net_cane'] ?? 0;
             $consolidated_ta_wt = $record['consolidated_ta_wt'] ?? 0;
             $consolidated_ta_amount = $record['consolidated_ta_amount'] ?? 0;
             $consolidated_fuel_amount = $record['consolidated_fuel_amount'] ?? 0;
@@ -353,7 +354,7 @@
 
                     <tr>
                         <td><strong>T</strong></td>
-                        <td>{{ $consolidated_ta_wt ? number_format($consolidated_ta_wt, 3) : '' }}</td>
+                        <td>{{ $trucking_net_cane ? number_format($trucking_net_cane, 3) : '' }}</td>
                         <td></td>
                         <td>{{ $consolidated_ta_amount ? number_format($consolidated_ta_amount, 2) : '' }}</td>
                         <td colspan="4"></td>
