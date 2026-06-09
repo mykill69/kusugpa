@@ -548,40 +548,43 @@ public function voucherPDF(Request $request)
 }
 
     foreach ($truckingAllowances as $trucking) {
-        $key = $trucking->planter_code;
+    $key = $trucking->planter_code;
 
-        if (!isset($summaryData[$key])) {
-            $summaryData[$key] = [
-                'planter_code' => $trucking->planter_code,
-                'planter_name' => $trucking->planter_name,
-                'tin_no' => '',
-                'week_no' => $weekFrom . ' - ' . $weekTo,
-                'week_end_date' => $weekEndDates[$weekTo] ?? '',
-                'quedan_a_lkg' => 0, 'quedan_a_price' => 0,
-                'quedan_b_lkg' => 0, 'quedan_b_price' => 0, 'quedan_b_liens' => 0,
-                'quedan_b_service_charge' => 0, 'quedan_b_insurance' => 0, 'quedan_b_tax' => 0,
-                'quedan_d_lkg' => 0, 'quedan_d_price' => 0, 'quedan_d_liens' => 0,
-                'quedan_d_service_charge' => 0, 'quedan_d_insurance' => 0, 'quedan_d_tax' => 0,
-                'mol_net' => 0, 'mol_price' => 0, 'molasses_liens' => 0,
-                'molasses_service_charge' => 0, 'molasses_insurance' => 0, 'molasses_tax' => 0,
-                'consolidated_total' => 0, 'consolidated_ta_wt' => 0,
-                'trucking_net_cane' => 0, 'trucking_ta_amount' => 0,
-                'trucking_additional_charge' => 0, 'trucking_trans_codes' => [],
-            ];
-        }
+    if (!isset($summaryData[$key])) {
+        $summaryData[$key] = [
+            'planter_code' => $trucking->planter_code,
+            'planter_name' => $trucking->planter_name,
+            'tin_no' => '',
+            'week_no' => $weekFrom . ' - ' . $weekTo,
+            'week_end_date' => $weekEndDates[$weekTo] ?? '',
+            'quedan_a_lkg' => 0, 'quedan_a_price' => 0,
+            'quedan_b_lkg' => 0, 'quedan_b_price' => 0, 'quedan_b_liens' => 0,
+            'quedan_b_service_charge' => 0, 'quedan_b_insurance' => 0, 'quedan_b_tax' => 0,
+            'quedan_d_lkg' => 0, 'quedan_d_price' => 0, 'quedan_d_liens' => 0,
+            'quedan_d_service_charge' => 0, 'quedan_d_insurance' => 0, 'quedan_d_tax' => 0,
+            'mol_net' => 0, 'mol_price' => 0, 'molasses_liens' => 0,
+            'molasses_service_charge' => 0, 'molasses_insurance' => 0, 'molasses_tax' => 0,
+            'consolidated_total' => 0, 'consolidated_ta_wt' => 0,
+            'trucking_net_cane' => 0, 'trucking_ta_amount' => 0,
+            'trucking_additional_charge' => 0, 'trucking_trans_codes' => [],
+            'consolidated_ta_amount' => 0,
+            'consolidated_fuel_amount' => 0,
+            'sugar_lkg' => 0,
+        ];
+    }
 
-        $summaryData[$key]['trucking_net_cane'] += $trucking->net_cane;
-        $summaryData[$key]['trucking_ta_amount'] += $trucking->ta_amount;
+    $summaryData[$key]['trucking_net_cane'] += $trucking->net_cane;
+    $summaryData[$key]['trucking_ta_amount'] += $trucking->ta_amount;
 
-        $additionalChargeCodes = [6, 8, 25, 36, 38];
-        if (in_array((int)$trucking->trans_code, $additionalChargeCodes)) {
-            $summaryData[$key]['trucking_additional_charge'] += $trucking->net_cane * 7.00;
-            $summaryData[$key]['has_additional_insurance'] = true;
-            if (!in_array($trucking->trans_code, $summaryData[$key]['trucking_trans_codes'])) {
-                $summaryData[$key]['trucking_trans_codes'][] = $trucking->trans_code;
-            }
+    $additionalChargeCodes = [6, 8, 25, 36, 38];
+    if (in_array((int)$trucking->trans_code, $additionalChargeCodes)) {
+        $summaryData[$key]['trucking_additional_charge'] += $trucking->net_cane * 7.00;
+        $summaryData[$key]['has_additional_insurance'] = true;
+        if (!in_array($trucking->trans_code, $summaryData[$key]['trucking_trans_codes'])) {
+            $summaryData[$key]['trucking_trans_codes'][] = $trucking->trans_code;
         }
     }
+}
 
     $summaryData = collect(array_values($summaryData));
 
