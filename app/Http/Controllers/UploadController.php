@@ -29,7 +29,7 @@ class UploadController extends Controller
             'consolidated' => 'upload-consolidated',
             'quedan' => 'upload-quedan',
             'molasses' => 'upload-molasses',
-        ];
+        ];W
 
         $requiredPermission = $permissionMap[$type] ?? null;
 
@@ -50,18 +50,32 @@ class UploadController extends Controller
             }
         }
 
-         $cropYear = $request->input('crop_year');  // FIX: use $request->input()
-        $weekNo = $request->input('week_no');      // FIX: use $request->input()
+        $cropYear = $request->input('crop_year');
+        $weekNo = $request->input('week_no');
 
         $request->validate([
             'file' => 'required|mimes:csv,txt|max:5120',
         ]);
 
         try {
+            // CHECK IF DATA ALREADY EXISTS FOR THIS WEEK/CROP YEAR
+            $model = $this->getModel($type);
+            $existingCount = $model::where('crop_year', $cropYear)
+                ->where('week_no', $weekNo)
+                ->count();
+
+            if ($existingCount > 0) {
+                $message = "Data for Crop Year {$cropYear} Week {$weekNo} already exists ({$existingCount} records). Upload cancelled.";
+                
+                if ($request->ajax() || $request->expectsJson()) {
+                    return response()->json(['error' => $message], 400);
+                }
+                return redirect()->back()->with('error', $message);
+            }
+
             $file = $request->file('file');
             $csvData = file_get_contents($file);
             
-            // Auto-detect delimiter
             $delimiter = str_contains($csvData, "\t") ? "\t" : ',';
             
             Log::info('CSV Upload started', [
@@ -70,7 +84,6 @@ class UploadController extends Controller
                 'file_size' => strlen($csvData)
             ]);
             
-            // Parse CSV
             $rows = explode("\n", trim($csvData));
             $lines = [];
             foreach ($rows as $row) {
@@ -99,19 +112,18 @@ class UploadController extends Controller
                 $method = 'process' . ucfirst($type) . 'Line';
                 
                 if (method_exists($this, $method)) {
-                $processed = $this->$method($line, $index, $userId);
-                
-                if ($processed['success']) {
-                    // FIX: Use the variables from the request
-                    $processed['data']['crop_year'] = $cropYear;
-                    $processed['data']['week_no'] = $weekNo;
-                    $batchData[] = $processed['data'];
-                } else {
-                    $errors[] = $processed['error'];
-                    Log::warning('CSV line error', ['line' => $index, 'error' => $processed['error']]);
+                    $processed = $this->$method($line, $index, $userId);
+                    
+                    if ($processed['success']) {
+                        $processed['data']['crop_year'] = $cropYear;
+                        $processed['data']['week_no'] = $weekNo;
+                        $batchData[] = $processed['data'];
+                    } else {
+                        $errors[] = $processed['error'];
+                        Log::warning('CSV line error', ['line' => $index, 'error' => $processed['error']]);
+                    }
                 }
             }
-        }
             
             Log::info('CSV Processing complete', [
                 'records_to_insert' => count($batchData),
@@ -120,7 +132,6 @@ class UploadController extends Controller
             
             $importedCount = 0;
             if (!empty($batchData)) {
-                $model = $this->getModel($type);
                 Log::info('Inserting into model', ['model' => $model, 'first_record' => $batchData[0]]);
                 
                 foreach (array_chunk($batchData, 100) as $chunk) {
@@ -130,7 +141,6 @@ class UploadController extends Controller
                         Log::info('Chunk inserted', ['count' => count($chunk)]);
                     } catch (\Exception $e) {
                         Log::error('Bulk insert failed, trying individual records', ['error' => $e->getMessage()]);
-                        // Try inserting one by one
                         foreach ($chunk as $record) {
                             try {
                                 $model::create($record);
@@ -147,7 +157,6 @@ class UploadController extends Controller
                 }
             }
             
-            // Log successful upload to audit trail
             AuditLog::log('upload', 'uploads', 'Uploaded ' . $type . ' CSV: ' . $importedCount . ' records imported', [
                 'type' => $type,
                 'file_name' => $file->getClientOriginalName(),
@@ -186,7 +195,51 @@ class UploadController extends Controller
             return redirect()->back()->with('error', 'Failed to upload CSV: ' . $e->getMessage());
         }
     }
-    
+
+    private function checkDuplicate($type, $record, $model)
+    {
+        switch ($type) {
+            case 'quedan':
+                return $model::where('crop_year', $record['crop_year'])
+                    ->where('week_no', $record['week_no'])
+                    ->where('planter_code', $record['planter_code'])
+                    ->where('qdn_no', $record['qdn_no'])
+                    ->exists();
+            
+            case 'molasses':
+                return $model::where('crop_year', $record['crop_year'])
+                    ->where('week_no', $record['week_no'])
+                    ->where('planter_code', $record['planter_code'])
+                    ->exists();
+            
+            case 'trucking':
+                return $model::where('crop_year', $record['crop_year'])
+                    ->where('week_no', $record['week_no'])
+                    ->where('planter_code', $record['planter_code'])
+                    ->where('trans_code', $record['trans_code'])
+                    ->exists();
+            
+            case 'consolidated':
+                return $model::where('crop_year', $record['crop_year'])
+                    ->where('week_no', $record['week_no'])
+                    ->where('planter_code', $record['planter_code'])
+                    ->exists();
+            
+            case 'summary':
+                return $model::where('crop_year', $record['crop_year'])
+                    ->where('week_no', $record['week_no'])
+                    ->where('planter_code', $record['planter_code'])
+                    ->exists();
+            
+            default:
+                // For fuel, rentals, underload, transloading, fci, mudpress
+                return $model::where('crop_year', $record['crop_year'])
+                    ->where('week_no', $record['week_no'])
+                    ->where('planter_code', $record['planter_code'])
+                    ->exists();
+        }
+    }
+        
     private function processSummaryLine($line, $index, $userId)
     {
         if (count($line) < 6) {

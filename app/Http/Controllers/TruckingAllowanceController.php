@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\TruckingAllowance;
 use App\Models\AuditLog;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\DB;
 
 class TruckingAllowanceController extends Controller
 {
@@ -59,7 +60,7 @@ class TruckingAllowanceController extends Controller
     {
         $cropYears = TruckingAllowance::select('crop_year')->distinct()->orderBy('crop_year')->pluck('crop_year');
         
-        $weeksData = TruckingAllowance::select('crop_year', 'week_no', \DB::raw('COUNT(*) as count'))
+        $weeksData = TruckingAllowance::select('crop_year', 'week_no', DB::raw('COUNT(*) as count'))
             ->groupBy('crop_year', 'week_no')
             ->orderBy('crop_year')
             ->orderBy('week_no')
