@@ -207,7 +207,6 @@
             $quedan_b_price = $record['quedan_b_price'] ?? 0;
             $quedan_b_gross = $quedan_b_lkg * $quedan_b_price;
             $quedan_b_liens = $record['quedan_b_liens'] ?? 0;
-            $has_additional_insurance = $record['has_additional_insurance'] ?? false;
             $trucking_additional_charge = $record['trucking_additional_charge'] ?? 0;
 
             $quedan_b_service = $sugar_lkg * 8.0 + $trucking_additional_charge;
@@ -249,9 +248,12 @@
             $consolidated_ta_wt = $record['consolidated_ta_wt'] ?? 0;
             $consolidated_ta_amount = $record['consolidated_ta_amount'] ?? 0;
             $consolidated_fuel_amount = $record['consolidated_fuel_amount'] ?? 0;
-            $consolidated_net = $consolidated_ta_amount - $consolidated_fuel_amount;
+            $consolidated_total = $record['consolidated_total'] ?? 0;
 
-            $totalGrossProceeds = $quedanGrossProceeds + $molasses_gross + $consolidated_ta_amount;
+            $consolidated_display = $consolidated_total >= 0 ? $consolidated_total : $consolidated_ta_amount;
+            $consolidated_net = $consolidated_display - $consolidated_fuel_amount;
+
+            $totalGrossProceeds = $quedanGrossProceeds + $molasses_gross + $consolidated_display;
             $totalDeductions = $quedanTotalDeductions + $molasses_total_deductions + $consolidated_fuel_amount;
             $totalNetProceeds = $totalGrossProceeds - $totalDeductions;
         @endphp
@@ -357,22 +359,10 @@
                         <td><strong>T</strong></td>
                         <td>{{ $trucking_net_cane ? number_format($trucking_net_cane, 3) : '' }}</td>
                         <td></td>
-                        <td>
-                            @php
-                                $consolidated_display =
-                                    $record['consolidated_total'] >= 0
-                                        ? $record['consolidated_total']
-                                        : $record['consolidated_ta_amount'];
-                                $consolidated_net_display =
-                                    $record['consolidated_total'] >= 0
-                                        ? $record['consolidated_total'] - $record['consolidated_fuel_amount']
-                                        : $record['consolidated_ta_amount'] - $record['consolidated_fuel_amount'];
-                            @endphp
-                            {{ $consolidated_display ? number_format($consolidated_display, 2) : '' }}
-                        </td>
+                        <td>{{ $consolidated_display ? number_format($consolidated_display, 2) : '' }}</td>
                         <td colspan="4"></td>
                         <td>{{ $consolidated_fuel_amount ? number_format($consolidated_fuel_amount, 2) : '' }}</td>
-                        <td>{{ $consolidated_net_display ? number_format($consolidated_net_display, 2) : '' }}</td>
+                        <td>{{ $consolidated_net ? number_format($consolidated_net, 2) : '' }}</td>
                     </tr>
 
                     <tr style="border-top: 2px solid #000; border-bottom: 2px solid #000;">
