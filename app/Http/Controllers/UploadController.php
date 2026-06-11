@@ -29,7 +29,7 @@ class UploadController extends Controller
             'consolidated' => 'upload-consolidated',
             'quedan' => 'upload-quedan',
             'molasses' => 'upload-molasses',
-        ];W
+        ];
 
         $requiredPermission = $permissionMap[$type] ?? null;
 
