@@ -363,12 +363,16 @@
                                     $record['consolidated_total'] >= 0
                                         ? $record['consolidated_total']
                                         : $record['consolidated_ta_amount'];
+                                $consolidated_net_display =
+                                    $record['consolidated_total'] >= 0
+                                        ? $record['consolidated_total'] - $record['consolidated_fuel_amount']
+                                        : $record['consolidated_ta_amount'] - $record['consolidated_fuel_amount'];
                             @endphp
                             {{ $consolidated_display ? number_format($consolidated_display, 2) : '' }}
                         </td>
                         <td colspan="4"></td>
                         <td>{{ $consolidated_fuel_amount ? number_format($consolidated_fuel_amount, 2) : '' }}</td>
-                        <td>{{ $consolidated_net ? number_format($consolidated_net, 2) : '' }}</td>
+                        <td>{{ $consolidated_net_display ? number_format($consolidated_net_display, 2) : '' }}</td>
                     </tr>
 
                     <tr style="border-top: 2px solid #000; border-bottom: 2px solid #000;">
