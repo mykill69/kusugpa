@@ -195,65 +195,66 @@
 </head>
 
 <body>
-   @foreach ($summaryData as $record)
-    @php
-        $sugar_lkg = $record['sugar_lkg'] ?? 0;
+    @foreach ($summaryData as $record)
+        @php
+            $sugar_lkg = $record['sugar_lkg'] ?? 0;
 
-        $quedan_a_lkg = $record['quedan_a_lkg'] ?? 0;
-        $quedan_a_price = $record['quedan_a_price'] ?? 0;
-        $quedan_a_gross = $quedan_a_lkg * $quedan_a_price;
+            $quedan_a_lkg = $record['quedan_a_lkg'] ?? 0;
+            $quedan_a_price = $record['quedan_a_price'] ?? 0;
+            $quedan_a_gross = $quedan_a_lkg * $quedan_a_price;
 
-        $quedan_b_lkg = $record['quedan_b_lkg'] ?? 0;
-        $quedan_b_price = $record['quedan_b_price'] ?? 0;
-        $quedan_b_gross = $quedan_b_lkg * $quedan_b_price;
-        $quedan_b_liens = $record['quedan_b_liens'] ?? 0;
-        $has_additional_insurance = $record['has_additional_insurance'] ?? false;
-        $trucking_additional_charge = $record['trucking_additional_charge'] ?? 0;
+            $quedan_b_lkg = $record['quedan_b_lkg'] ?? 0;
+            $quedan_b_price = $record['quedan_b_price'] ?? 0;
+            $quedan_b_gross = $quedan_b_lkg * $quedan_b_price;
+            $quedan_b_liens = $record['quedan_b_liens'] ?? 0;
+            $has_additional_insurance = $record['has_additional_insurance'] ?? false;
+            $trucking_additional_charge = $record['trucking_additional_charge'] ?? 0;
 
-        $quedan_b_service = $sugar_lkg * 8.0 + $trucking_additional_charge;
-        $quedan_b_insurance = $sugar_lkg * 3.0;
-        $quedan_b_tax = $sugar_lkg * $quedan_b_price * 0.01;
-        $quedan_b_total_deductions = $quedan_b_liens + $quedan_b_service + $quedan_b_insurance + $quedan_b_tax;
-        $quedan_b_net = $quedan_b_gross - $quedan_b_total_deductions;
+            $quedan_b_service = $sugar_lkg * 8.0 + $trucking_additional_charge;
+            $quedan_b_insurance = $sugar_lkg * 3.0;
+            $quedan_b_tax = $sugar_lkg * $quedan_b_price * 0.01;
+            $quedan_b_total_deductions = $quedan_b_liens + $quedan_b_service + $quedan_b_insurance + $quedan_b_tax;
+            $quedan_b_net = $quedan_b_gross - $quedan_b_total_deductions;
 
-        $quedan_d_lkg = $record['quedan_d_lkg'] ?? 0;
-        $quedan_d_price = $record['quedan_d_price'] ?? 0;
-        $quedan_d_gross = $quedan_d_lkg * $quedan_d_price;
-        $quedan_d_liens = $record['quedan_d_liens'] ?? 0;
-        $quedan_d_service = $quedan_d_lkg * 8.0;
-        $quedan_d_insurance = $quedan_d_lkg * 3.0;
-        $quedan_d_tax = $quedan_d_lkg * $quedan_d_price * 0.01;
-        $quedan_d_total_deductions = $quedan_d_liens + $quedan_d_service + $quedan_d_insurance + $quedan_d_tax;
-        $quedan_d_net = $quedan_d_gross - $quedan_d_total_deductions;
+            $quedan_d_lkg = $record['quedan_d_lkg'] ?? 0;
+            $quedan_d_price = $record['quedan_d_price'] ?? 0;
+            $quedan_d_gross = $quedan_d_lkg * $quedan_d_price;
+            $quedan_d_liens = $record['quedan_d_liens'] ?? 0;
+            $quedan_d_service = $quedan_d_lkg * 8.0;
+            $quedan_d_insurance = $quedan_d_lkg * 3.0;
+            $quedan_d_tax = $quedan_d_lkg * $quedan_d_price * 0.01;
+            $quedan_d_total_deductions = $quedan_d_liens + $quedan_d_service + $quedan_d_insurance + $quedan_d_tax;
+            $quedan_d_net = $quedan_d_gross - $quedan_d_total_deductions;
 
-        $quedanGrossProceeds = $quedan_a_gross + $quedan_b_gross + $quedan_d_gross;
-        $quedanTotalLiens = $quedan_b_liens + $quedan_d_liens;
-        $quedanTotalServiceCharge = $quedan_b_service + $quedan_d_service;
-        $quedanTotalInsurance = $quedan_b_insurance + $quedan_d_insurance;
-        $quedanTotalTax = $quedan_b_tax + $quedan_d_tax;
-        $quedanTotalDeductions = $quedanTotalLiens + $quedanTotalServiceCharge + $quedanTotalInsurance + $quedanTotalTax;
-        $quedanNetProceeds = $quedanGrossProceeds - $quedanTotalDeductions;
+            $quedanGrossProceeds = $quedan_a_gross + $quedan_b_gross + $quedan_d_gross;
+            $quedanTotalLiens = $quedan_b_liens + $quedan_d_liens;
+            $quedanTotalServiceCharge = $quedan_b_service + $quedan_d_service;
+            $quedanTotalInsurance = $quedan_b_insurance + $quedan_d_insurance;
+            $quedanTotalTax = $quedan_b_tax + $quedan_d_tax;
+            $quedanTotalDeductions =
+                $quedanTotalLiens + $quedanTotalServiceCharge + $quedanTotalInsurance + $quedanTotalTax;
+            $quedanNetProceeds = $quedanGrossProceeds - $quedanTotalDeductions;
 
-        $mol_net = $record['mol_net'] ?? 0;
-        $mol_price = $record['mol_price'] ?? 0;
-        $molasses_gross = $mol_net * $mol_price;
-        $molasses_liens = $record['molasses_liens'] ?? 0;
-        $molasses_service = $mol_net * 20.0;
-        $molasses_insurance = $mol_net * 120.0 + 30.0;
-        $molasses_tax = $mol_net * $mol_price * 0.01;
-        $molasses_total_deductions = $molasses_liens + $molasses_service + $molasses_insurance + $molasses_tax;
-        $molasses_net = $molasses_gross - $molasses_total_deductions;
+            $mol_net = $record['mol_net'] ?? 0;
+            $mol_price = $record['mol_price'] ?? 0;
+            $molasses_gross = $mol_net * $mol_price;
+            $molasses_liens = $record['molasses_liens'] ?? 0;
+            $molasses_service = $mol_net * 20.0;
+            $molasses_insurance = $mol_net * 120.0 + 30.0;
+            $molasses_tax = $mol_net * $mol_price * 0.01;
+            $molasses_total_deductions = $molasses_liens + $molasses_service + $molasses_insurance + $molasses_tax;
+            $molasses_net = $molasses_gross - $molasses_total_deductions;
 
-        $trucking_net_cane = $record['trucking_net_cane'] ?? 0;
-        $consolidated_ta_wt = $record['consolidated_ta_wt'] ?? 0;
-        $consolidated_ta_amount = $record['consolidated_ta_amount'] ?? 0;
-        $consolidated_fuel_amount = $record['consolidated_fuel_amount'] ?? 0;
-        $consolidated_net = $consolidated_ta_amount - $consolidated_fuel_amount;
+            $trucking_net_cane = $record['trucking_net_cane'] ?? 0;
+            $consolidated_ta_wt = $record['consolidated_ta_wt'] ?? 0;
+            $consolidated_ta_amount = $record['consolidated_ta_amount'] ?? 0;
+            $consolidated_fuel_amount = $record['consolidated_fuel_amount'] ?? 0;
+            $consolidated_net = $consolidated_ta_amount - $consolidated_fuel_amount;
 
-        $totalGrossProceeds = $quedanGrossProceeds + $molasses_gross + $consolidated_ta_amount;
-        $totalDeductions = $quedanTotalDeductions + $molasses_total_deductions + $consolidated_fuel_amount;
-        $totalNetProceeds = $totalGrossProceeds - $totalDeductions;
-    @endphp
+            $totalGrossProceeds = $quedanGrossProceeds + $molasses_gross + $consolidated_ta_amount;
+            $totalDeductions = $quedanTotalDeductions + $molasses_total_deductions + $consolidated_fuel_amount;
+            $totalNetProceeds = $totalGrossProceeds - $totalDeductions;
+        @endphp
 
         <div class="page">
             <div class="header">
@@ -356,7 +357,15 @@
                         <td><strong>T</strong></td>
                         <td>{{ $trucking_net_cane ? number_format($trucking_net_cane, 3) : '' }}</td>
                         <td></td>
-                        <td>{{ $consolidated_ta_amount ? number_format($consolidated_ta_amount, 2) : '' }}</td>
+                        <td>
+                            @php
+                                $consolidated_display =
+                                    $record['consolidated_total'] >= 0
+                                        ? $record['consolidated_total']
+                                        : $record['consolidated_ta_amount'];
+                            @endphp
+                            {{ $consolidated_display ? number_format($consolidated_display, 2) : '' }}
+                        </td>
                         <td colspan="4"></td>
                         <td>{{ $consolidated_fuel_amount ? number_format($consolidated_fuel_amount, 2) : '' }}</td>
                         <td>{{ $consolidated_net ? number_format($consolidated_net, 2) : '' }}</td>
